@@ -259,9 +259,26 @@
                 <label class="form-label" for="despesaData">Data</label>
                 <input id="despesaData" class="form-control" formControlName="data" type="date" />
               </div>
-              <div class="form-check form-switch mb-3">
-                <input class="form-check-input" formControlName="essencial" type="checkbox" id="despesaEssencial" />
-                <label class="form-check-label" for="despesaEssencial">Despesa essencial</label>
+              <div class="hm-essencial-toggle mb-3">
+                <div class="d-flex align-items-center justify-content-between gap-3 flex-wrap">
+                  <div class="hm-essencial-toggle-text flex-grow-1 min-w-0">
+                    <span class="hm-essencial-toggle-badge text-uppercase">Classificação</span>
+                    <label class="hm-essencial-toggle-title mb-0" for="despesaEssencial">Despesa essencial</label>
+                    <p class="hm-essencial-toggle-hint mb-0 small">
+                      Marque para moradia, alimentação, saúde e itens que não podem faltar no mês.
+                    </p>
+                  </div>
+                  <div class="form-check form-switch hm-essencial-switch flex-shrink-0">
+                    <input
+                      class="form-check-input"
+                      formControlName="essencial"
+                      type="checkbox"
+                      id="despesaEssencial"
+                      role="switch"
+                      [attr.aria-checked]="despesaForm.get('essencial')?.value === true"
+                    />
+                  </div>
+                </div>
               </div>
               <div class="d-grid gap-2">
                 <button class="btn btn-primary hm-touch-btn" type="submit">
