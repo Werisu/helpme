@@ -147,9 +147,18 @@
     <section class="hm-enter mb-4 mb-lg-5" style="--hm-enter-delay: 0.18s">
       <div class="row g-3 g-lg-4">
         <div class="col-12 col-lg-4">
-          <form class="card border-0 shadow-sm h-100" [formGroup]="receitaForm" (ngSubmit)="cadastrarReceita()">
+          <form class="card border-0 shadow-sm h-100" [formGroup]="receitaForm" (ngSubmit)="salvarReceita()">
             <div class="card-body p-4">
-              <h3 class="h5 mb-3">Nova receita</h3>
+              <h3 class="h5 mb-2">
+                @if (editingReceitaId()) {
+                Editar receita
+                } @else {
+                Nova receita
+                }
+              </h3>
+              @if (editingReceitaId()) {
+              <p class="small text-secondary mb-3">Você está alterando um lançamento existente.</p>
+              }
               <div class="mb-3">
                 <label class="form-label" for="receitaDescricao">Descrição</label>
                 <input id="receitaDescricao" class="form-control" formControlName="descricao" placeholder="Salário, freela..." />
@@ -162,15 +171,33 @@
                 <label class="form-label" for="receitaData">Data</label>
                 <input id="receitaData" class="form-control" formControlName="data" type="date" />
               </div>
-              <button class="btn btn-primary w-100 hm-touch-btn" type="submit">Salvar receita</button>
+              <div class="d-grid gap-2">
+                <button class="btn btn-primary hm-touch-btn" type="submit">
+                  {{ editingReceitaId() ? 'Atualizar receita' : 'Salvar receita' }}
+                </button>
+                @if (editingReceitaId()) {
+                <button class="btn btn-outline-secondary hm-touch-btn" type="button" (click)="cancelarEdicaoReceita()">
+                  Cancelar edição
+                </button>
+                }
+              </div>
             </div>
           </form>
         </div>
 
         <div class="col-12 col-lg-4">
-          <form class="card border-0 shadow-sm h-100" [formGroup]="despesaForm" (ngSubmit)="cadastrarDespesa()">
+          <form class="card border-0 shadow-sm h-100" [formGroup]="despesaForm" (ngSubmit)="salvarDespesa()">
             <div class="card-body p-4">
-              <h3 class="h5 mb-3">Nova despesa</h3>
+              <h3 class="h5 mb-2">
+                @if (editingDespesaId()) {
+                Editar despesa
+                } @else {
+                Nova despesa
+                }
+              </h3>
+              @if (editingDespesaId()) {
+              <p class="small text-secondary mb-3">Você está alterando um lançamento existente.</p>
+              }
               <div class="mb-3">
                 <label class="form-label" for="despesaDescricao">Descrição</label>
                 <input id="despesaDescricao" class="form-control" formControlName="descricao" placeholder="Mercado, aluguel..." />
@@ -181,7 +208,16 @@
               </div>
               <div class="mb-3">
                 <label class="form-label" for="despesaValor">Valor</label>
-                <input id="despesaValor" class="form-control" formControlName="valor" placeholder="0,00" type="number" />
+                <input
+                  id="despesaValor"
+                  class="form-control"
+                  formControlName="valor"
+                  placeholder="0,00"
+                  type="number"
+                  inputmode="decimal"
+                  min="0.01"
+                  step="0.01"
+                />
               </div>
               <div class="mb-3">
                 <label class="form-label" for="despesaData">Data</label>
@@ -191,15 +227,33 @@
                 <input class="form-check-input" formControlName="essencial" type="checkbox" id="despesaEssencial" />
                 <label class="form-check-label" for="despesaEssencial">Despesa essencial</label>
               </div>
-              <button class="btn btn-primary w-100 hm-touch-btn" type="submit">Salvar despesa</button>
+              <div class="d-grid gap-2">
+                <button class="btn btn-primary hm-touch-btn" type="submit">
+                  {{ editingDespesaId() ? 'Atualizar despesa' : 'Salvar despesa' }}
+                </button>
+                @if (editingDespesaId()) {
+                <button class="btn btn-outline-secondary hm-touch-btn" type="button" (click)="cancelarEdicaoDespesa()">
+                  Cancelar edição
+                </button>
+                }
+              </div>
             </div>
           </form>
         </div>
 
         <div class="col-12 col-lg-4">
-          <form class="card border-0 shadow-sm h-100" [formGroup]="dividaForm" (ngSubmit)="cadastrarDivida()">
+          <form class="card border-0 shadow-sm h-100" [formGroup]="dividaForm" (ngSubmit)="salvarDivida()">
             <div class="card-body p-4">
-              <h3 class="h5 mb-3">Nova dívida</h3>
+              <h3 class="h5 mb-2">
+                @if (editingDividaId()) {
+                Editar dívida
+                } @else {
+                Nova dívida
+                }
+              </h3>
+              @if (editingDividaId()) {
+              <p class="small text-secondary mb-3">Você está alterando um cadastro existente.</p>
+              }
               <div class="mb-3">
                 <label class="form-label" for="dividaCredor">Credor</label>
                 <input id="dividaCredor" class="form-control" formControlName="credor" placeholder="Banco, cartão..." />
@@ -222,9 +276,162 @@
                   <input id="dividaVencimento" class="form-control" formControlName="vencimentoDia" placeholder="Dia" type="number" />
                 </div>
               </div>
-              <button class="btn btn-primary w-100 hm-touch-btn" type="submit">Salvar dívida</button>
+              <div class="d-grid gap-2">
+                <button class="btn btn-primary hm-touch-btn" type="submit">
+                  {{ editingDividaId() ? 'Atualizar dívida' : 'Salvar dívida' }}
+                </button>
+                @if (editingDividaId()) {
+                <button class="btn btn-outline-secondary hm-touch-btn" type="button" (click)="cancelarEdicaoDivida()">
+                  Cancelar edição
+                </button>
+                }
+              </div>
             </div>
           </form>
+        </div>
+      </div>
+    </section>
+
+    <section class="hm-enter mb-4 mb-lg-5" style="--hm-enter-delay: 0.2s">
+      <h2 class="h4 mb-3">Seus lançamentos</h2>
+      <p class="text-secondary mb-4">Visualize, edite ou remova itens. A remoção pede confirmação.</p>
+
+      <div class="row g-4">
+        <div class="col-12">
+          <div class="card border-0 shadow-sm">
+            <div class="card-header bg-transparent border-0 pt-4 px-4 pb-0">
+              <h3 class="h5 mb-0">Receitas</h3>
+            </div>
+            <div class="card-body px-4 pb-4">
+              <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                  <thead class="hm-table-head">
+                    <tr>
+                      <th>Data</th>
+                      <th>Descrição</th>
+                      <th class="text-end">Valor</th>
+                      <th class="text-end text-nowrap">Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (r of receitasOrdenadas(); track r.id) {
+                    <tr [class.table-primary]="editingReceitaId() === r.id">
+                      <td>{{ formatarDataIso(r.data) }}</td>
+                      <td class="fw-semibold">{{ r.descricao }}</td>
+                      <td class="text-end">{{ r.valor | currency : 'BRL' : 'symbol' : '1.2-2' : 'pt-BR' }}</td>
+                      <td class="text-end">
+                        <div class="btn-group btn-group-sm flex-wrap justify-content-end" role="group">
+                          <button type="button" class="btn btn-outline-primary" (click)="editarReceita(r)">Editar</button>
+                          <button type="button" class="btn btn-outline-danger" (click)="removerReceita(r)">Remover</button>
+                        </div>
+                      </td>
+                    </tr>
+                    } @empty {
+                    <tr>
+                      <td colspan="4" class="text-center text-secondary py-4">Nenhuma receita cadastrada.</td>
+                    </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12">
+          <div class="card border-0 shadow-sm">
+            <div class="card-header bg-transparent border-0 pt-4 px-4 pb-0">
+              <h3 class="h5 mb-0">Despesas</h3>
+            </div>
+            <div class="card-body px-4 pb-4">
+              <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                  <thead class="hm-table-head">
+                    <tr>
+                      <th>Data</th>
+                      <th>Descrição</th>
+                      <th>Categoria</th>
+                      <th>Essencial</th>
+                      <th class="text-end">Valor</th>
+                      <th class="text-end text-nowrap">Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (d of despesasOrdenadas(); track d.id) {
+                    <tr [class.table-primary]="editingDespesaId() === d.id">
+                      <td>{{ formatarDataIso(d.data) }}</td>
+                      <td class="fw-semibold">{{ d.descricao }}</td>
+                      <td>{{ d.categoria }}</td>
+                      <td>
+                        @if (d.essencial) {
+                        <span class="badge text-bg-secondary">Sim</span>
+                        } @else {
+                        <span class="badge text-bg-light border">Não</span>
+                        }
+                      </td>
+                      <td class="text-end">{{ d.valor | currency : 'BRL' : 'symbol' : '1.2-2' : 'pt-BR' }}</td>
+                      <td class="text-end">
+                        <div class="btn-group btn-group-sm flex-wrap justify-content-end" role="group">
+                          <button type="button" class="btn btn-outline-primary" (click)="editarDespesa(d)">Editar</button>
+                          <button type="button" class="btn btn-outline-danger" (click)="removerDespesa(d)">Remover</button>
+                        </div>
+                      </td>
+                    </tr>
+                    } @empty {
+                    <tr>
+                      <td colspan="6" class="text-center text-secondary py-4">Nenhuma despesa cadastrada.</td>
+                    </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12">
+          <div class="card border-0 shadow-sm">
+            <div class="card-header bg-transparent border-0 pt-4 px-4 pb-0">
+              <h3 class="h5 mb-0">Dívidas</h3>
+            </div>
+            <div class="card-body px-4 pb-4">
+              <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                  <thead class="hm-table-head">
+                    <tr>
+                      <th>Credor</th>
+                      <th class="text-end">Saldo</th>
+                      <th class="text-end">Mínimo</th>
+                      <th class="text-end">Juros</th>
+                      <th class="text-center">Venc.</th>
+                      <th class="text-end text-nowrap">Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (div of dividasOrdenadas(); track div.id) {
+                    <tr [class.table-primary]="editingDividaId() === div.id">
+                      <td class="fw-semibold">{{ div.credor }}</td>
+                      <td class="text-end">{{ div.saldoTotal | currency : 'BRL' : 'symbol' : '1.2-2' : 'pt-BR' }}</td>
+                      <td class="text-end">{{ div.parcelaMinima | currency : 'BRL' : 'symbol' : '1.2-2' : 'pt-BR' }}</td>
+                      <td class="text-end">{{ div.jurosMensal / 100 | percent : '1.0-2' : 'pt-BR' }}</td>
+                      <td class="text-center">Dia {{ div.vencimentoDia }}</td>
+                      <td class="text-end">
+                        <div class="btn-group btn-group-sm flex-wrap justify-content-end" role="group">
+                          <button type="button" class="btn btn-outline-primary" (click)="editarDivida(div)">Editar</button>
+                          <button type="button" class="btn btn-outline-danger" (click)="removerDivida(div)">Remover</button>
+                        </div>
+                      </td>
+                    </tr>
+                    } @empty {
+                    <tr>
+                      <td colspan="6" class="text-center text-secondary py-4">Nenhuma dívida cadastrada.</td>
+                    </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </section>
