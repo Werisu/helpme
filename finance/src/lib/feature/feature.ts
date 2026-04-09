@@ -61,6 +61,43 @@ export class Feature {
     }
   }
 
+  protected importarBackupJson(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) {
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const text = reader.result as string;
+      const parsed = this.store.parseBackupJson(text);
+      if (!parsed.ok) {
+        alert(parsed.error);
+        input.value = '';
+        return;
+      }
+      const nRec = parsed.state.receitas.length;
+      const nDes = parsed.state.despesas.length;
+      const nDiv = parsed.state.dividas.length;
+      const msg = `Substituir todos os dados locais por este backup?\n\nReceitas: ${nRec}\nDespesas: ${nDes}\nDívidas: ${nDiv}`;
+      if (!confirm(msg)) {
+        input.value = '';
+        return;
+      }
+      this.store.applyImportedState(parsed.state);
+      this.cancelarEdicaoReceita();
+      this.cancelarEdicaoDespesa();
+      this.cancelarEdicaoDivida();
+      this.store.irParaMesAtual();
+      input.value = '';
+    };
+    reader.onerror = () => {
+      alert('Não foi possível ler o arquivo.');
+      input.value = '';
+    };
+    reader.readAsText(file, 'UTF-8');
+  }
+
   /** Exibe data ISO yyyy-MM-dd como dd/MM/yyyy (sem Date — evita fuso). */
   protected formatarDataIso(ymd: string): string {
     const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(ymd.trim());

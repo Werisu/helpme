@@ -523,5 +523,56 @@
         </div>
       </div>
     </section>
+
+    <section class="hm-enter card border-0 shadow-sm mb-4 mb-lg-5" style="--hm-enter-delay: 0.24s">
+      <div class="card-header bg-transparent border-0 pt-4 px-4">
+        <h2 class="h4 mb-1">Backup e exportação</h2>
+        <p class="text-secondary mb-0 small">
+          Guarde o JSON em nuvem ou disco antes de limpar dados do navegador. O CSV abre no Excel/LibreOffice (UTF-8). A
+          restauração substitui tudo o que está salvo neste aparelho.
+        </p>
+      </div>
+      <div class="card-body px-4 pb-4">
+        <div class="row g-3">
+          <div class="col-12 col-lg-6">
+            <h3 class="h6 text-uppercase text-secondary fw-bold mb-2">Backup completo</h3>
+            <p class="small text-secondary mb-3">
+              Inclui receitas, despesas e dívidas no mesmo formato do app (com <code>version</code> e
+              <code>exportedAt</code>).
+            </p>
+            <div class="d-flex flex-wrap gap-2">
+              <button type="button" class="btn btn-primary hm-touch-btn" (click)="store.downloadJsonBackup()">
+                Baixar backup JSON
+              </button>
+              <input
+                #jsonBackupInput
+                type="file"
+                class="d-none"
+                accept=".json,application/json"
+                (change)="importarBackupJson($event)"
+              />
+              <button type="button" class="btn btn-outline-warning hm-touch-btn" (click)="jsonBackupInput.click()">
+                Restaurar backup JSON…
+              </button>
+            </div>
+          </div>
+          <div class="col-12 col-lg-6">
+            <h3 class="h6 text-uppercase text-secondary fw-bold mb-2">Planilhas (CSV)</h3>
+            <p class="small text-secondary mb-3">Três arquivos separados. Úteis para análise; a restauração oficial é o JSON.</p>
+            <div class="d-flex flex-wrap gap-2">
+              <button type="button" class="btn btn-outline-secondary btn-sm hm-touch-btn" (click)="store.downloadCsvReceitas()">
+                CSV receitas
+              </button>
+              <button type="button" class="btn btn-outline-secondary btn-sm hm-touch-btn" (click)="store.downloadCsvDespesas()">
+                CSV despesas
+              </button>
+              <button type="button" class="btn btn-outline-secondary btn-sm hm-touch-btn" (click)="store.downloadCsvDividas()">
+                CSV dívidas
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
   </div>
 </section>

@@ -51,6 +51,104 @@ function normalizeMoney(value: unknown): number {
   return Number.isFinite(n) ? n : Number.NaN;
 }
 
+function csvRow(values: (string | number | boolean)[]): string {
+  return values
+    .map((v) => {
+      const s = String(v ?? '');
+      if (/[",\n\r]/.test(s)) {
+        return `"${s.replace(/"/g, '""')}"`;
+      }
+      return s;
+    })
+    .join(',');
+}
+
+function triggerBrowserDownload(blob: Blob, filename: string): void {
+  if (typeof document === 'undefined') {
+    return;
+  }
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.rel = 'noopener';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function mapReceitaImport(x: unknown): Receita | null {
+  if (!x || typeof x !== 'object') {
+    return null;
+  }
+  const r = x as Record<string, unknown>;
+  const valor = normalizeMoney(r['valor']);
+  if (!Number.isFinite(valor) || valor <= 0) {
+    return null;
+  }
+  const descricao = String(r['descricao'] ?? '').trim();
+  const data = String(r['data'] ?? '').trim();
+  if (!descricao || !data) {
+    return null;
+  }
+  const rid = r['id'];
+  const id = typeof rid === 'string' && rid.length > 0 ? rid : crypto.randomUUID();
+  return { id, descricao, valor, data };
+}
+
+function mapDespesaImport(x: unknown): Despesa | null {
+  if (!x || typeof x !== 'object') {
+    return null;
+  }
+  const r = x as Record<string, unknown>;
+  const valor = normalizeMoney(r['valor']);
+  if (!Number.isFinite(valor) || valor <= 0) {
+    return null;
+  }
+  const descricao = String(r['descricao'] ?? '').trim();
+  const categoria = String(r['categoria'] ?? '').trim();
+  const data = String(r['data'] ?? '').trim();
+  if (!descricao || !categoria || !data) {
+    return null;
+  }
+  const ess =
+    r['essencial'] === true ||
+    r['essencial'] === 'true' ||
+    r['essencial'] === 'sim' ||
+    r['essencial'] === 1;
+  const essencial = Boolean(ess);
+  const rid = r['id'];
+  const id = typeof rid === 'string' && rid.length > 0 ? rid : crypto.randomUUID();
+  return { id, descricao, categoria, valor, data, essencial };
+}
+
+function mapDividaImport(x: unknown): Divida | null {
+  if (!x || typeof x !== 'object') {
+    return null;
+  }
+  const r = x as Record<string, unknown>;
+  const saldoTotal = normalizeMoney(r['saldoTotal']);
+  const parcelaMinima = normalizeMoney(r['parcelaMinima']);
+  if (!Number.isFinite(saldoTotal) || !Number.isFinite(parcelaMinima)) {
+    return null;
+  }
+  const credor = String(r['credor'] ?? '').trim();
+  if (!credor) {
+    return null;
+  }
+  const jurosRaw = normalizeMoney(r['jurosMensal']);
+  const jurosMensal = Number.isFinite(jurosRaw) ? jurosRaw : 0;
+  const vd = Number(r['vencimentoDia']);
+  const vencimentoDia =
+    Number.isFinite(vd) && vd >= 1 && vd <= 31 ? Math.round(vd) : 10;
+  const rid = r['id'];
+  const id = typeof rid === 'string' && rid.length > 0 ? rid : crypto.randomUUID();
+  return { id, credor, saldoTotal, parcelaMinima, jurosMensal, vencimentoDia };
+}
+
+export type FinanceBackupParseResult =
+  | { ok: true; state: FinanceState }
+  | { ok: false; error: string };
+
 @Injectable({ providedIn: 'root' })
 export class FinanceStore {
   private readonly receitasSignal = signal<Receita[]>([]);
@@ -329,6 +427,106 @@ export class FinanceStore {
 
   removeDivida(id: string): void {
     this.dividasSignal.set(this.dividasSignal().filter((item) => item.id !== id));
+    this.persist();
+  }
+
+  /** Backup completo (mesmo conteúdo persistido + metadados). */
+  downloadJsonBackup(): void {
+    const exportedAt = new Date().toISOString();
+    const payload = {
+      version: 1,
+      exportedAt,
+      receitas: this.receitasSignal(),
+      despesas: this.despesasSignal(),
+      dividas: this.dividasSignal(),
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], {
+      type: 'application/json;charset=utf-8',
+    });
+    const day = exportedAt.slice(0, 10);
+    triggerBrowserDownload(blob, `helpme-finance-backup-${day}.json`);
+  }
+
+  downloadCsvReceitas(): void {
+    const lines = [
+      csvRow(['id', 'descricao', 'valor', 'data']),
+      ...this.receitasSignal().map((r) => csvRow([r.id, r.descricao, r.valor, r.data])),
+    ];
+    const blob = new Blob([`\uFEFF${lines.join('\n')}`], { type: 'text/csv;charset=utf-8' });
+    triggerBrowserDownload(blob, 'helpme-receitas.csv');
+  }
+
+  downloadCsvDespesas(): void {
+    const lines = [
+      csvRow(['id', 'descricao', 'categoria', 'valor', 'data', 'essencial']),
+      ...this.despesasSignal().map((d) =>
+        csvRow([d.id, d.descricao, d.categoria, d.valor, d.data, d.essencial ? 'sim' : 'nao']),
+      ),
+    ];
+    const blob = new Blob([`\uFEFF${lines.join('\n')}`], { type: 'text/csv;charset=utf-8' });
+    triggerBrowserDownload(blob, 'helpme-despesas.csv');
+  }
+
+  downloadCsvDividas(): void {
+    const lines = [
+      csvRow(['id', 'credor', 'saldoTotal', 'parcelaMinima', 'jurosMensal', 'vencimentoDia']),
+      ...this.dividasSignal().map((div) =>
+        csvRow([
+          div.id,
+          div.credor,
+          div.saldoTotal,
+          div.parcelaMinima,
+          div.jurosMensal,
+          div.vencimentoDia,
+        ]),
+      ),
+    ];
+    const blob = new Blob([`\uFEFF${lines.join('\n')}`], { type: 'text/csv;charset=utf-8' });
+    triggerBrowserDownload(blob, 'helpme-dividas.csv');
+  }
+
+  /**
+   * Aceita backup exportado pelo app (`version` + arrays) ou o JSON cru do localStorage.
+   */
+  parseBackupJson(text: string): FinanceBackupParseResult {
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(text);
+    } catch {
+      return { ok: false, error: 'O arquivo não é um JSON válido.' };
+    }
+    if (!parsed || typeof parsed !== 'object') {
+      return { ok: false, error: 'Formato inválido.' };
+    }
+    const root = parsed as Record<string, unknown>;
+    const dataNode = root['data'];
+    const inner =
+      dataNode && typeof dataNode === 'object'
+        ? (dataNode as Record<string, unknown>)
+        : root;
+    const receitasRaw = inner['receitas'];
+    const despesasRaw = inner['despesas'];
+    const dividasRaw = inner['dividas'];
+    if (!Array.isArray(receitasRaw) || !Array.isArray(despesasRaw) || !Array.isArray(dividasRaw)) {
+      return {
+        ok: false,
+        error: 'O JSON precisa conter os arrays receitas, despesas e dívidas.',
+      };
+    }
+    const receitas = receitasRaw.map(mapReceitaImport).filter((x): x is Receita => x !== null);
+    const despesas = despesasRaw.map(mapDespesaImport).filter((x): x is Despesa => x !== null);
+    const dividas = dividasRaw.map(mapDividaImport).filter((x): x is Divida => x !== null);
+    return {
+      ok: true,
+      state: { receitas, despesas, dividas },
+    };
+  }
+
+  /** Substitui dados locais e persiste (use após confirmar com o usuário). */
+  applyImportedState(state: FinanceState): void {
+    this.receitasSignal.set(state.receitas);
+    this.despesasSignal.set(state.despesas);
+    this.dividasSignal.set(state.dividas);
     this.persist();
   }
 
