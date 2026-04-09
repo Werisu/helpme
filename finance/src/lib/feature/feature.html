@@ -1,6 +1,45 @@
-<section class="finance-shell py-4 py-lg-5">
-  <div class="container-xl">
-    <header class="hero card border-0 shadow-sm mb-4 mb-lg-5 overflow-hidden">
+<section class="finance-shell py-3 py-lg-5">
+  <div class="container-xl px-3 px-lg-4">
+    <div class="hm-theme-toolbar mb-3 mb-lg-4">
+      <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+        <span class="hm-brand d-lg-none text-body-secondary fw-semibold">Helpme</span>
+        <div
+          class="btn-group ms-lg-auto"
+          role="group"
+          aria-label="Tema da interface"
+        >
+          <button
+            type="button"
+            class="btn btn-outline-secondary btn-sm hm-touch-btn"
+            [class.active]="theme.mode() === 'system'"
+            (click)="setTheme('system')"
+          >
+            Auto
+          </button>
+          <button
+            type="button"
+            class="btn btn-outline-secondary btn-sm hm-touch-btn"
+            [class.active]="theme.mode() === 'light'"
+            (click)="setTheme('light')"
+          >
+            Claro
+          </button>
+          <button
+            type="button"
+            class="btn btn-outline-secondary btn-sm hm-touch-btn"
+            [class.active]="theme.mode() === 'dark'"
+            (click)="setTheme('dark')"
+          >
+            Escuro
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <header
+      class="hero hm-enter card border-0 shadow-sm mb-4 mb-lg-5 overflow-hidden"
+      style="--hm-enter-delay: 0.05s"
+    >
       <div class="card-body p-4 p-lg-5">
         <div class="d-flex flex-column flex-lg-row justify-content-between gap-3 align-items-start">
           <div>
@@ -20,7 +59,7 @@
       </div>
     </header>
 
-    <section class="mb-4 mb-lg-5">
+    <section class="hm-enter mb-4 mb-lg-5" style="--hm-enter-delay: 0.1s">
       <div class="row g-3 g-lg-4">
         <div class="col-12 col-sm-6 col-xl">
           <lib-finance-stat-card
@@ -65,7 +104,7 @@
       </div>
     </section>
 
-    <section class="card border-0 shadow-sm mb-4 mb-lg-5">
+    <section class="hm-enter card border-0 shadow-sm mb-4 mb-lg-5" style="--hm-enter-delay: 0.14s">
       <div class="card-header bg-transparent border-0 pt-4 px-4">
         <h2 class="h4 mb-1">Alertas de risco</h2>
         <p class="text-secondary mb-0">Ações rápidas para evitar crescimento da dívida.</p>
@@ -73,7 +112,7 @@
       <div class="card-body pt-3 px-4">
         <div class="d-flex flex-column gap-3">
           @for (alerta of store.alertasRisco(); track alerta.mensagem) {
-          <div class="alert alert-light border d-flex align-items-start gap-2 mb-0">
+          <div class="alert alert-secondary border d-flex align-items-start gap-2 mb-0 hm-alert-row">
             <lib-risk-pill [type]="alerta.tipo" [label]="alerta.tipo.toUpperCase()" />
             <span>{{ alerta.mensagem }}</span>
           </div>
@@ -82,7 +121,7 @@
       </div>
     </section>
 
-    <section class="mb-4 mb-lg-5">
+    <section class="hm-enter mb-4 mb-lg-5" style="--hm-enter-delay: 0.18s">
       <div class="row g-3 g-lg-4">
         <div class="col-12 col-lg-4">
           <form class="card border-0 shadow-sm h-100" [formGroup]="receitaForm" (ngSubmit)="cadastrarReceita()">
@@ -100,7 +139,7 @@
                 <label class="form-label" for="receitaData">Data</label>
                 <input id="receitaData" class="form-control" formControlName="data" type="date" />
               </div>
-              <button class="btn btn-primary w-100" type="submit">Salvar receita</button>
+              <button class="btn btn-primary w-100 hm-touch-btn" type="submit">Salvar receita</button>
             </div>
           </form>
         </div>
@@ -129,7 +168,7 @@
                 <input class="form-check-input" formControlName="essencial" type="checkbox" id="despesaEssencial" />
                 <label class="form-check-label" for="despesaEssencial">Despesa essencial</label>
               </div>
-              <button class="btn btn-primary w-100" type="submit">Salvar despesa</button>
+              <button class="btn btn-primary w-100 hm-touch-btn" type="submit">Salvar despesa</button>
             </div>
           </form>
         </div>
@@ -160,14 +199,14 @@
                   <input id="dividaVencimento" class="form-control" formControlName="vencimentoDia" placeholder="Dia" type="number" />
                 </div>
               </div>
-              <button class="btn btn-primary w-100" type="submit">Salvar dívida</button>
+              <button class="btn btn-primary w-100 hm-touch-btn" type="submit">Salvar dívida</button>
             </div>
           </form>
         </div>
       </div>
     </section>
 
-    <section class="card border-0 shadow-sm">
+    <section class="hm-enter card border-0 shadow-sm" style="--hm-enter-delay: 0.22s">
       <div class="card-header bg-transparent border-0 pt-4 px-4">
         <h2 class="h4 mb-1">Prioridade automática de pagamento</h2>
         <p class="text-secondary mb-0">Recomendação com base em juros e capacidade real do mês.</p>
@@ -175,7 +214,7 @@
       <div class="card-body pt-3 px-4">
         <div class="table-responsive">
           <table class="table table-hover align-middle mb-0">
-            <thead class="table-light">
+            <thead class="hm-table-head">
               <tr>
                 <th>Credor</th>
                 <th>Juros</th>

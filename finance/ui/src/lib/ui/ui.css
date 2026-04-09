@@ -9,35 +9,61 @@
 }
 
 .critico {
-  color: #842029;
-  background: #f8d7da;
+  color: var(--hm-pill-critico-fg);
+  background: var(--hm-pill-critico-bg);
 }
 
 .atencao {
-  color: #664d03;
-  background: #fff3cd;
+  color: var(--hm-pill-atencao-fg);
+  background: var(--hm-pill-atencao-bg);
 }
 
 .info {
-  color: #055160;
-  background: #cff4fc;
+  color: var(--hm-pill-info-fg);
+  background: var(--hm-pill-info-bg);
 }
 
 .stat-card {
-  border-radius: 1rem;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  background: linear-gradient(160deg, #ffffff 0%, #f8f9ff 100%);
+  border-radius: var(--hm-radius-lg, 1rem);
+  transition:
+    transform var(--hm-motion-duration, 0.35s) var(--hm-motion-ease, ease),
+    box-shadow var(--hm-motion-duration, 0.35s) var(--hm-motion-ease, ease);
+  background: linear-gradient(
+    160deg,
+    var(--hm-stat-default-from) 0%,
+    var(--hm-stat-default-to) 100%
+  );
 }
 
-.stat-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 1rem 2rem rgba(17, 24, 39, 0.08) !important;
+@media (prefers-reduced-motion: no-preference) {
+  .stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--hm-metric-shadow) !important;
+  }
 }
 
 .stat-card-danger {
-  background: linear-gradient(160deg, #fff5f5 0%, #ffe9e9 100%);
+  background: linear-gradient(
+    160deg,
+    var(--hm-stat-danger-from) 0%,
+    var(--hm-stat-danger-to) 100%
+  );
 }
 
 .stat-card-ok {
-  background: linear-gradient(160deg, #f1fff6 0%, #e6f7ee 100%);
+  background: linear-gradient(
+    160deg,
+    var(--hm-stat-ok-from) 0%,
+    var(--hm-stat-ok-to) 100%
+  );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stat-card {
+    transition: none;
+  }
+
+  .stat-card:hover {
+    transform: none;
+  }
 }

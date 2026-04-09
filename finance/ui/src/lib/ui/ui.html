@@ -5,7 +5,7 @@
 >
   <div class="card-body d-flex flex-column gap-2">
     <p class="text-secondary text-uppercase small fw-semibold mb-0">{{ title() }}</p>
-    <div class="display-6 fw-bold mb-0">
+    <div class="fs-3 fs-md-2 fs-lg-1 fw-bold mb-0 text-break">
   @if (valueType() === 'currency') {
       {{ value() | currency : 'BRL' : 'symbol' : '1.2-2' : 'pt-BR' }}
   } @else if (valueType() === 'percent') {

@@ -1,0 +1,82 @@
+/* Design tokens — Helpme Finance (complementa Bootstrap 5.3 data-bs-theme) */
+:root,
+[data-bs-theme='light'] {
+  --hm-radius-sm: 0.5rem;
+  --hm-radius-md: 0.75rem;
+  --hm-radius-lg: 1rem;
+  --hm-radius-xl: 1.25rem;
+
+  --hm-space-xs: 0.35rem;
+  --hm-space-sm: 0.75rem;
+  --hm-space-md: 1rem;
+  --hm-space-lg: 1.5rem;
+  --hm-touch-min: 2.75rem;
+
+  --hm-bg-shell: #f0f3fa;
+  --hm-hero-gradient: radial-gradient(circle at 100% 0%, #dbe4ff 0%, #ffffff 58%);
+  --hm-metric-bg: #ffffff;
+  --hm-metric-border: #e9ecef;
+  --hm-metric-shadow: 0 0.5rem 1.25rem rgba(17, 24, 39, 0.07);
+
+  --hm-stat-default-from: #ffffff;
+  --hm-stat-default-to: #f5f7ff;
+  --hm-stat-danger-from: #fff5f5;
+  --hm-stat-danger-to: #ffe4e4;
+  --hm-stat-ok-from: #eefcf3;
+  --hm-stat-ok-to: #dff6e8;
+
+  --hm-pill-critico-fg: #842029;
+  --hm-pill-critico-bg: #f8d7da;
+  --hm-pill-atencao-fg: #664d03;
+  --hm-pill-atencao-bg: #fff3cd;
+  --hm-pill-info-fg: #055160;
+  --hm-pill-info-bg: #cff4fc;
+
+  --hm-motion-duration: 0.35s;
+  --hm-motion-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --hm-enter-duration: 0.5s;
+}
+
+[data-bs-theme='dark'] {
+  --hm-bg-shell: #0c0f14;
+  --hm-hero-gradient: radial-gradient(circle at 100% 0%, #1c2d4a 0%, #121826 55%);
+  --hm-metric-bg: #1a2332;
+  --hm-metric-border: #2d3d52;
+  --hm-metric-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.35);
+
+  --hm-stat-default-from: #1a2332;
+  --hm-stat-default-to: #151d2b;
+  --hm-stat-danger-from: #2a1a1c;
+  --hm-stat-danger-to: #3d2226;
+  --hm-stat-ok-from: #152a1f;
+  --hm-stat-ok-to: #1a3325;
+
+  --hm-pill-critico-fg: #f8d7da;
+  --hm-pill-critico-bg: #5c2129;
+  --hm-pill-atencao-fg: #fff3cd;
+  --hm-pill-atencao-bg: #664d03;
+  --hm-pill-info-fg: #cff4fc;
+  --hm-pill-info-bg: #055160;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--hm-bg-shell);
+  transition: background-color var(--hm-motion-duration) var(--hm-motion-ease);
+  /* Mobile: respiro para notch / home indicator */
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  body {
+    transition: none;
+  }
+}

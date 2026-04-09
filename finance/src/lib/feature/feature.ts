@@ -1,7 +1,7 @@
 import { CurrencyPipe, PercentPipe } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { FinanceStore } from '@helpme/data-access';
+import { FinanceStore, ThemeService, ThemeMode } from '@helpme/data-access';
 import { FinanceStatCardComponent, RiskPillComponent } from '@helpme/ui';
 
 @Component({
@@ -18,7 +18,12 @@ import { FinanceStatCardComponent, RiskPillComponent } from '@helpme/ui';
 })
 export class Feature {
   protected readonly store = inject(FinanceStore);
+  protected readonly theme = inject(ThemeService);
   private readonly fb = inject(FormBuilder);
+
+  protected setTheme(mode: ThemeMode): void {
+    this.theme.setMode(mode);
+  }
 
   protected readonly receitaForm = this.fb.nonNullable.group({
     descricao: ['', [Validators.required]],
