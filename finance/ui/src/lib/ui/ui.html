@@ -1,0 +1,10 @@
+<article class="card" [class.danger]="tone() === 'danger'" [class.ok]="tone() === 'ok'">
+  <p class="title">{{ title() }}</p>
+  @if (valueType() === 'currency') {
+  <strong>{{ value() | currency : 'BRL' : 'symbol' : '1.2-2' : 'pt-BR' }}</strong>
+  } @else if (valueType() === 'percent') {
+  <strong>{{ value() | percent : '1.0-0' : 'pt-BR' }}</strong>
+  } @else {
+  <strong>{{ value() }}</strong>
+  }
+</article>

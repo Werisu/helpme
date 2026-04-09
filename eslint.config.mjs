@@ -1,11 +1,10 @@
+import baseConfig from './eslint.base.config.mjs';
 import nx from '@nx/eslint-plugin';
 
 export default [
-  ...nx.configs['flat/base'],
-  ...nx.configs['flat/typescript'],
-  ...nx.configs['flat/javascript'],
+  ...baseConfig,
   {
-    ignores: ['**/dist', '**/out-tsc'],
+    ignores: ['**/dist', '**/out-tsc', '**/vitest.config.*.timestamp*'],
   },
   {
     files: [
@@ -18,8 +17,33 @@ export default [
       '**/*.cjs',
       '**/*.mjs',
     ],
-    // Override or add rules here
-    rules: {},
+    rules: {
+      '@nx/enforce-module-boundaries': [
+        'error',
+        {
+          allow: [],
+          allowCircularSelfDependency: true,
+          depConstraints: [
+            {
+              sourceTag: 'type:feature',
+              onlyDependOnLibsWithTags: ['type:feature', 'type:data-access', 'type:ui'],
+            },
+            {
+              sourceTag: 'type:data-access',
+              onlyDependOnLibsWithTags: ['type:data-access'],
+            },
+            {
+              sourceTag: 'type:ui',
+              onlyDependOnLibsWithTags: ['type:ui'],
+            },
+            {
+              sourceTag: '*',
+              onlyDependOnLibsWithTags: ['*'],
+            },
+          ],
+        },
+      ],
+    },
   },
   ...nx.configs['flat/angular'],
   ...nx.configs['flat/angular-template'],

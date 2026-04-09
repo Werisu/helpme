@@ -1,0 +1,114 @@
+<section class="page">
+  <header>
+    <h1>Painel financeiro mensal</h1>
+    <p>Cadastre receitas, despesas e dívidas para receber alertas de risco e prioridade de pagamento.</p>
+  </header>
+
+  <section class="cards">
+    <lib-finance-stat-card
+      title="Receitas no mês"
+      [value]="store.totalReceitasMes()"
+      valueType="currency"
+      tone="ok"
+    />
+    <lib-finance-stat-card
+      title="Despesas no mês"
+      [value]="store.totalDespesasMes()"
+      valueType="currency"
+      tone="default"
+    />
+    <lib-finance-stat-card
+      title="Parcela mínima de dívidas"
+      [value]="store.totalParcelaMinima()"
+      valueType="currency"
+      tone="default"
+    />
+    <lib-finance-stat-card
+      title="Saldo projetado"
+      [value]="store.saldoProjetado()"
+      valueType="currency"
+      [tone]="store.saldoProjetado() < 0 ? 'danger' : 'ok'"
+    />
+    <lib-finance-stat-card
+      title="Comprometimento da renda"
+      [value]="store.comprometimentoRenda()"
+      valueType="percent"
+      [tone]="store.comprometimentoRenda() > 1 ? 'danger' : 'default'"
+    />
+  </section>
+
+  <section class="alerts">
+    <h2>Alertas de risco</h2>
+    @for (alerta of store.alertasRisco(); track alerta.mensagem) {
+    <div class="alert-item">
+      <lib-risk-pill [type]="alerta.tipo" [label]="alerta.tipo.toUpperCase()" />
+      <span>{{ alerta.mensagem }}</span>
+    </div>
+    }
+  </section>
+
+  <section class="forms-grid">
+    <form class="form" [formGroup]="receitaForm" (ngSubmit)="cadastrarReceita()">
+      <h3>Cadastrar receita</h3>
+      <input formControlName="descricao" placeholder="Descrição" />
+      <input formControlName="valor" placeholder="Valor" type="number" />
+      <input formControlName="data" type="date" />
+      <button type="submit">Salvar receita</button>
+    </form>
+
+    <form class="form" [formGroup]="despesaForm" (ngSubmit)="cadastrarDespesa()">
+      <h3>Cadastrar despesa</h3>
+      <input formControlName="descricao" placeholder="Descrição" />
+      <input formControlName="categoria" placeholder="Categoria" />
+      <input formControlName="valor" placeholder="Valor" type="number" />
+      <input formControlName="data" type="date" />
+      <label class="check">
+        <input formControlName="essencial" type="checkbox" />
+        Despesa essencial
+      </label>
+      <button type="submit">Salvar despesa</button>
+    </form>
+
+    <form class="form" [formGroup]="dividaForm" (ngSubmit)="cadastrarDivida()">
+      <h3>Cadastrar dívida</h3>
+      <input formControlName="credor" placeholder="Credor" />
+      <input formControlName="saldoTotal" placeholder="Saldo total" type="number" />
+      <input formControlName="parcelaMinima" placeholder="Parcela mínima" type="number" />
+      <input formControlName="jurosMensal" placeholder="Juros mensal (%)" type="number" />
+      <input formControlName="vencimentoDia" placeholder="Dia vencimento (1-31)" type="number" />
+      <button type="submit">Salvar dívida</button>
+    </form>
+  </section>
+
+  <section class="tables">
+    <article>
+      <h2>Prioridade automática de pagamento</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Credor</th>
+            <th>Juros</th>
+            <th>Mínimo</th>
+            <th>Recomendado</th>
+            <th>Motivo</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of store.prioridadePagamento(); track item.divida.id) {
+          <tr>
+            <td>{{ item.divida.credor }}</td>
+            <td>{{ item.divida.jurosMensal / 100 | percent : '1.0-2' : 'pt-BR' }}</td>
+            <td>{{ item.divida.parcelaMinima | currency : 'BRL' : 'symbol' : '1.2-2' : 'pt-BR' }}</td>
+            <td>{{ item.valorRecomendado | currency : 'BRL' : 'symbol' : '1.2-2' : 'pt-BR' }}</td>
+            <td>{{ item.motivo }}</td>
+          </tr>
+          } @empty {
+          <tr>
+            <td colspan="5">Cadastre dívidas para gerar a ordem de prioridade.</td>
+          </tr>
+          }
+        </tbody>
+      </table>
+    </article>
+  </section>
+</section>
