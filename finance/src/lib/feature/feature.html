@@ -1,114 +1,209 @@
-<section class="page">
-  <header>
-    <h1>Painel financeiro mensal</h1>
-    <p>Cadastre receitas, despesas e dívidas para receber alertas de risco e prioridade de pagamento.</p>
-  </header>
+<section class="finance-shell py-4 py-lg-5">
+  <div class="container-xl">
+    <header class="hero card border-0 shadow-sm mb-4 mb-lg-5 overflow-hidden">
+      <div class="card-body p-4 p-lg-5">
+        <div class="d-flex flex-column flex-lg-row justify-content-between gap-3 align-items-start">
+          <div>
+            <span class="badge rounded-pill text-bg-primary mb-3">MVP Financeiro</span>
+            <h1 class="display-6 fw-bold mb-2">Controle mensal para sair da bola de neve</h1>
+            <p class="text-secondary mb-0">
+              Cadastre entradas, saídas e dívidas para enxergar risco, priorizar pagamentos e manter o mês no azul.
+            </p>
+          </div>
+          <div class="metric-chip px-3 py-2 rounded-pill">
+            <small class="text-uppercase fw-semibold text-secondary">Saldo projetado</small>
+            <div class="fw-bold fs-5">
+              {{ store.saldoProjetado() | currency : 'BRL' : 'symbol' : '1.2-2' : 'pt-BR' }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
 
-  <section class="cards">
-    <lib-finance-stat-card
-      title="Receitas no mês"
-      [value]="store.totalReceitasMes()"
-      valueType="currency"
-      tone="ok"
-    />
-    <lib-finance-stat-card
-      title="Despesas no mês"
-      [value]="store.totalDespesasMes()"
-      valueType="currency"
-      tone="default"
-    />
-    <lib-finance-stat-card
-      title="Parcela mínima de dívidas"
-      [value]="store.totalParcelaMinima()"
-      valueType="currency"
-      tone="default"
-    />
-    <lib-finance-stat-card
-      title="Saldo projetado"
-      [value]="store.saldoProjetado()"
-      valueType="currency"
-      [tone]="store.saldoProjetado() < 0 ? 'danger' : 'ok'"
-    />
-    <lib-finance-stat-card
-      title="Comprometimento da renda"
-      [value]="store.comprometimentoRenda()"
-      valueType="percent"
-      [tone]="store.comprometimentoRenda() > 1 ? 'danger' : 'default'"
-    />
-  </section>
+    <section class="mb-4 mb-lg-5">
+      <div class="row g-3 g-lg-4">
+        <div class="col-12 col-sm-6 col-xl">
+          <lib-finance-stat-card
+            title="Receitas no mês"
+            [value]="store.totalReceitasMes()"
+            valueType="currency"
+            tone="ok"
+          />
+        </div>
+        <div class="col-12 col-sm-6 col-xl">
+          <lib-finance-stat-card
+            title="Despesas no mês"
+            [value]="store.totalDespesasMes()"
+            valueType="currency"
+            tone="default"
+          />
+        </div>
+        <div class="col-12 col-sm-6 col-xl">
+          <lib-finance-stat-card
+            title="Parcela mínima de dívidas"
+            [value]="store.totalParcelaMinima()"
+            valueType="currency"
+            tone="default"
+          />
+        </div>
+        <div class="col-12 col-sm-6 col-xl">
+          <lib-finance-stat-card
+            title="Saldo projetado"
+            [value]="store.saldoProjetado()"
+            valueType="currency"
+            [tone]="store.saldoProjetado() < 0 ? 'danger' : 'ok'"
+          />
+        </div>
+        <div class="col-12 col-sm-6 col-xl">
+          <lib-finance-stat-card
+            title="Comprometimento da renda"
+            [value]="store.comprometimentoRenda()"
+            valueType="percent"
+            [tone]="store.comprometimentoRenda() > 1 ? 'danger' : 'default'"
+          />
+        </div>
+      </div>
+    </section>
 
-  <section class="alerts">
-    <h2>Alertas de risco</h2>
-    @for (alerta of store.alertasRisco(); track alerta.mensagem) {
-    <div class="alert-item">
-      <lib-risk-pill [type]="alerta.tipo" [label]="alerta.tipo.toUpperCase()" />
-      <span>{{ alerta.mensagem }}</span>
-    </div>
-    }
-  </section>
-
-  <section class="forms-grid">
-    <form class="form" [formGroup]="receitaForm" (ngSubmit)="cadastrarReceita()">
-      <h3>Cadastrar receita</h3>
-      <input formControlName="descricao" placeholder="Descrição" />
-      <input formControlName="valor" placeholder="Valor" type="number" />
-      <input formControlName="data" type="date" />
-      <button type="submit">Salvar receita</button>
-    </form>
-
-    <form class="form" [formGroup]="despesaForm" (ngSubmit)="cadastrarDespesa()">
-      <h3>Cadastrar despesa</h3>
-      <input formControlName="descricao" placeholder="Descrição" />
-      <input formControlName="categoria" placeholder="Categoria" />
-      <input formControlName="valor" placeholder="Valor" type="number" />
-      <input formControlName="data" type="date" />
-      <label class="check">
-        <input formControlName="essencial" type="checkbox" />
-        Despesa essencial
-      </label>
-      <button type="submit">Salvar despesa</button>
-    </form>
-
-    <form class="form" [formGroup]="dividaForm" (ngSubmit)="cadastrarDivida()">
-      <h3>Cadastrar dívida</h3>
-      <input formControlName="credor" placeholder="Credor" />
-      <input formControlName="saldoTotal" placeholder="Saldo total" type="number" />
-      <input formControlName="parcelaMinima" placeholder="Parcela mínima" type="number" />
-      <input formControlName="jurosMensal" placeholder="Juros mensal (%)" type="number" />
-      <input formControlName="vencimentoDia" placeholder="Dia vencimento (1-31)" type="number" />
-      <button type="submit">Salvar dívida</button>
-    </form>
-  </section>
-
-  <section class="tables">
-    <article>
-      <h2>Prioridade automática de pagamento</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Credor</th>
-            <th>Juros</th>
-            <th>Mínimo</th>
-            <th>Recomendado</th>
-            <th>Motivo</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (item of store.prioridadePagamento(); track item.divida.id) {
-          <tr>
-            <td>{{ item.divida.credor }}</td>
-            <td>{{ item.divida.jurosMensal / 100 | percent : '1.0-2' : 'pt-BR' }}</td>
-            <td>{{ item.divida.parcelaMinima | currency : 'BRL' : 'symbol' : '1.2-2' : 'pt-BR' }}</td>
-            <td>{{ item.valorRecomendado | currency : 'BRL' : 'symbol' : '1.2-2' : 'pt-BR' }}</td>
-            <td>{{ item.motivo }}</td>
-          </tr>
-          } @empty {
-          <tr>
-            <td colspan="5">Cadastre dívidas para gerar a ordem de prioridade.</td>
-          </tr>
+    <section class="card border-0 shadow-sm mb-4 mb-lg-5">
+      <div class="card-header bg-transparent border-0 pt-4 px-4">
+        <h2 class="h4 mb-1">Alertas de risco</h2>
+        <p class="text-secondary mb-0">Ações rápidas para evitar crescimento da dívida.</p>
+      </div>
+      <div class="card-body pt-3 px-4">
+        <div class="d-flex flex-column gap-3">
+          @for (alerta of store.alertasRisco(); track alerta.mensagem) {
+          <div class="alert alert-light border d-flex align-items-start gap-2 mb-0">
+            <lib-risk-pill [type]="alerta.tipo" [label]="alerta.tipo.toUpperCase()" />
+            <span>{{ alerta.mensagem }}</span>
+          </div>
           }
-        </tbody>
-      </table>
-    </article>
-  </section>
+        </div>
+      </div>
+    </section>
+
+    <section class="mb-4 mb-lg-5">
+      <div class="row g-3 g-lg-4">
+        <div class="col-12 col-lg-4">
+          <form class="card border-0 shadow-sm h-100" [formGroup]="receitaForm" (ngSubmit)="cadastrarReceita()">
+            <div class="card-body p-4">
+              <h3 class="h5 mb-3">Nova receita</h3>
+              <div class="mb-3">
+                <label class="form-label" for="receitaDescricao">Descrição</label>
+                <input id="receitaDescricao" class="form-control" formControlName="descricao" placeholder="Salário, freela..." />
+              </div>
+              <div class="mb-3">
+                <label class="form-label" for="receitaValor">Valor</label>
+                <input id="receitaValor" class="form-control" formControlName="valor" placeholder="0,00" type="number" />
+              </div>
+              <div class="mb-3">
+                <label class="form-label" for="receitaData">Data</label>
+                <input id="receitaData" class="form-control" formControlName="data" type="date" />
+              </div>
+              <button class="btn btn-primary w-100" type="submit">Salvar receita</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="col-12 col-lg-4">
+          <form class="card border-0 shadow-sm h-100" [formGroup]="despesaForm" (ngSubmit)="cadastrarDespesa()">
+            <div class="card-body p-4">
+              <h3 class="h5 mb-3">Nova despesa</h3>
+              <div class="mb-3">
+                <label class="form-label" for="despesaDescricao">Descrição</label>
+                <input id="despesaDescricao" class="form-control" formControlName="descricao" placeholder="Mercado, aluguel..." />
+              </div>
+              <div class="mb-3">
+                <label class="form-label" for="despesaCategoria">Categoria</label>
+                <input id="despesaCategoria" class="form-control" formControlName="categoria" placeholder="Alimentação, moradia..." />
+              </div>
+              <div class="mb-3">
+                <label class="form-label" for="despesaValor">Valor</label>
+                <input id="despesaValor" class="form-control" formControlName="valor" placeholder="0,00" type="number" />
+              </div>
+              <div class="mb-3">
+                <label class="form-label" for="despesaData">Data</label>
+                <input id="despesaData" class="form-control" formControlName="data" type="date" />
+              </div>
+              <div class="form-check form-switch mb-3">
+                <input class="form-check-input" formControlName="essencial" type="checkbox" id="despesaEssencial" />
+                <label class="form-check-label" for="despesaEssencial">Despesa essencial</label>
+              </div>
+              <button class="btn btn-primary w-100" type="submit">Salvar despesa</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="col-12 col-lg-4">
+          <form class="card border-0 shadow-sm h-100" [formGroup]="dividaForm" (ngSubmit)="cadastrarDivida()">
+            <div class="card-body p-4">
+              <h3 class="h5 mb-3">Nova dívida</h3>
+              <div class="mb-3">
+                <label class="form-label" for="dividaCredor">Credor</label>
+                <input id="dividaCredor" class="form-control" formControlName="credor" placeholder="Banco, cartão..." />
+              </div>
+              <div class="mb-3">
+                <label class="form-label" for="dividaSaldo">Saldo total</label>
+                <input id="dividaSaldo" class="form-control" formControlName="saldoTotal" placeholder="0,00" type="number" />
+              </div>
+              <div class="mb-3">
+                <label class="form-label" for="dividaMinimo">Parcela mínima</label>
+                <input id="dividaMinimo" class="form-control" formControlName="parcelaMinima" placeholder="0,00" type="number" />
+              </div>
+              <div class="row g-2 mb-3">
+                <div class="col-6">
+                  <label class="form-label" for="dividaJuros">Juros mensal (%)</label>
+                  <input id="dividaJuros" class="form-control" formControlName="jurosMensal" placeholder="0" type="number" />
+                </div>
+                <div class="col-6">
+                  <label class="form-label" for="dividaVencimento">Vencimento</label>
+                  <input id="dividaVencimento" class="form-control" formControlName="vencimentoDia" placeholder="Dia" type="number" />
+                </div>
+              </div>
+              <button class="btn btn-primary w-100" type="submit">Salvar dívida</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <section class="card border-0 shadow-sm">
+      <div class="card-header bg-transparent border-0 pt-4 px-4">
+        <h2 class="h4 mb-1">Prioridade automática de pagamento</h2>
+        <p class="text-secondary mb-0">Recomendação com base em juros e capacidade real do mês.</p>
+      </div>
+      <div class="card-body pt-3 px-4">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Credor</th>
+                <th>Juros</th>
+                <th>Mínimo</th>
+                <th>Recomendado</th>
+                <th>Motivo</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (item of store.prioridadePagamento(); track item.divida.id) {
+              <tr>
+                <td class="fw-semibold">{{ item.divida.credor }}</td>
+                <td>{{ item.divida.jurosMensal / 100 | percent : '1.0-2' : 'pt-BR' }}</td>
+                <td>{{ item.divida.parcelaMinima | currency : 'BRL' : 'symbol' : '1.2-2' : 'pt-BR' }}</td>
+                <td class="fw-semibold">{{ item.valorRecomendado | currency : 'BRL' : 'symbol' : '1.2-2' : 'pt-BR' }}</td>
+                <td>{{ item.motivo }}</td>
+              </tr>
+              } @empty {
+              <tr>
+                <td colspan="5" class="text-center text-secondary py-4">
+                  Cadastre dívidas para gerar a ordem de prioridade.
+                </td>
+              </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </div>
 </section>

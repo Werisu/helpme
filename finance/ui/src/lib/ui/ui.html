@@ -1,10 +1,18 @@
-<article class="card" [class.danger]="tone() === 'danger'" [class.ok]="tone() === 'ok'">
-  <p class="title">{{ title() }}</p>
+<article
+  class="card stat-card h-100 border-0 shadow-sm"
+  [class.stat-card-danger]="tone() === 'danger'"
+  [class.stat-card-ok]="tone() === 'ok'"
+>
+  <div class="card-body d-flex flex-column gap-2">
+    <p class="text-secondary text-uppercase small fw-semibold mb-0">{{ title() }}</p>
+    <div class="display-6 fw-bold mb-0">
   @if (valueType() === 'currency') {
-  <strong>{{ value() | currency : 'BRL' : 'symbol' : '1.2-2' : 'pt-BR' }}</strong>
+      {{ value() | currency : 'BRL' : 'symbol' : '1.2-2' : 'pt-BR' }}
   } @else if (valueType() === 'percent') {
-  <strong>{{ value() | percent : '1.0-0' : 'pt-BR' }}</strong>
+      {{ value() | percent : '1.0-0' : 'pt-BR' }}
   } @else {
-  <strong>{{ value() }}</strong>
+      {{ value() }}
   }
+    </div>
+  </div>
 </article>

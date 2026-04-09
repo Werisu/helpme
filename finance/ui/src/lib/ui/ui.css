@@ -1,49 +1,43 @@
-.card {
-  border: 1px solid #e7e7e7;
-  border-radius: 12px;
-  padding: 1rem;
-  background: #ffffff;
-}
-
-.title {
-  margin: 0 0 0.5rem 0;
-  color: #5b5b5b;
-  font-size: 0.875rem;
-}
-
-strong {
-  font-size: 1.3rem;
-}
-
-.danger {
-  border-color: #f2b8b5;
-  background: #fff5f5;
-}
-
-.ok {
-  border-color: #bee8cc;
-  background: #f4fff6;
-}
-
 .pill {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
   border-radius: 999px;
-  padding: 0.2rem 0.6rem;
-  font-size: 0.8rem;
-  font-weight: 600;
+  padding: 0.28rem 0.7rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
 }
 
 .critico {
-  color: #8c1414;
-  background: #ffe5e5;
+  color: #842029;
+  background: #f8d7da;
 }
 
 .atencao {
-  color: #8c5a14;
-  background: #fff2dd;
+  color: #664d03;
+  background: #fff3cd;
 }
 
 .info {
-  color: #16488c;
-  background: #e6f0ff;
+  color: #055160;
+  background: #cff4fc;
+}
+
+.stat-card {
+  border-radius: 1rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  background: linear-gradient(160deg, #ffffff 0%, #f8f9ff 100%);
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 1rem 2rem rgba(17, 24, 39, 0.08) !important;
+}
+
+.stat-card-danger {
+  background: linear-gradient(160deg, #fff5f5 0%, #ffe9e9 100%);
+}
+
+.stat-card-ok {
+  background: linear-gradient(160deg, #f1fff6 0%, #e6f7ee 100%);
 }

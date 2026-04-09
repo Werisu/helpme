@@ -1,11 +1,8 @@
 import { CurrencyPipe, PercentPipe } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { FinanceStore } from '../../../data-access/src/lib/finance.store';
-import {
-  FinanceStatCardComponent,
-  RiskPillComponent,
-} from '../../../ui/src/lib/ui/ui';
+import { FinanceStore } from '@helpme/data-access';
+import { FinanceStatCardComponent, RiskPillComponent } from '@helpme/ui';
 
 @Component({
   selector: 'lib-feature',
