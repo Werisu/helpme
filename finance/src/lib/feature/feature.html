@@ -1,37 +1,60 @@
 <section class="finance-shell py-3 py-lg-5">
   <div class="container-xl px-3 px-lg-4">
     <div class="hm-theme-toolbar mb-3 mb-lg-4">
-      <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+      <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
         <span class="hm-brand d-lg-none text-body-secondary fw-semibold">Helpme</span>
-        <div
-          class="btn-group ms-lg-auto"
-          role="group"
-          aria-label="Tema da interface"
-        >
-          <button
-            type="button"
-            class="btn btn-outline-secondary btn-sm hm-touch-btn"
-            [class.active]="theme.mode() === 'system'"
-            (click)="setTheme('system')"
-          >
-            Auto
-          </button>
-          <button
-            type="button"
-            class="btn btn-outline-secondary btn-sm hm-touch-btn"
-            [class.active]="theme.mode() === 'light'"
-            (click)="setTheme('light')"
-          >
-            Claro
-          </button>
-          <button
-            type="button"
-            class="btn btn-outline-secondary btn-sm hm-touch-btn"
-            [class.active]="theme.mode() === 'dark'"
-            (click)="setTheme('dark')"
-          >
-            Escuro
-          </button>
+        <div class="hm-theme-switcher ms-lg-auto">
+          <span class="hm-theme-switcher-caption d-none d-sm-inline">Aparência</span>
+          <div class="hm-theme-pill" role="group" aria-label="Tema da interface">
+            <button
+              type="button"
+              class="hm-theme-option"
+              [class.hm-theme-option-active]="theme.mode() === 'system'"
+              [attr.aria-pressed]="theme.mode() === 'system'"
+              aria-label="Tema automático, segue o sistema"
+              (click)="setTheme('system')"
+            >
+              <span class="hm-theme-option-icon" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
+                  <line x1="8" y1="21" x2="16" y2="21" />
+                  <line x1="12" y1="17" x2="12" y2="21" />
+                </svg>
+              </span>
+              <span class="hm-theme-option-text d-none d-sm-inline">Auto</span>
+            </button>
+            <button
+              type="button"
+              class="hm-theme-option"
+              [class.hm-theme-option-active]="theme.mode() === 'light'"
+              [attr.aria-pressed]="theme.mode() === 'light'"
+              aria-label="Tema claro"
+              (click)="setTheme('light')"
+            >
+              <span class="hm-theme-option-icon" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="4" />
+                  <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+                </svg>
+              </span>
+              <span class="hm-theme-option-text d-none d-sm-inline">Claro</span>
+            </button>
+            <button
+              type="button"
+              class="hm-theme-option"
+              [class.hm-theme-option-active]="theme.mode() === 'dark'"
+              [attr.aria-pressed]="theme.mode() === 'dark'"
+              aria-label="Tema escuro"
+              (click)="setTheme('dark')"
+            >
+              <span class="hm-theme-option-icon" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+                </svg>
+              </span>
+              <span class="hm-theme-option-text d-none d-sm-inline">Escuro</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
