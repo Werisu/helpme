@@ -1,6 +1,7 @@
 import { CurrencyPipe, PercentPipe } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import Swal from 'sweetalert2';
 import {
   Despesa,
   Divida,
@@ -104,6 +105,26 @@ export class Feature {
     return m ? `${m[3]}/${m[2]}/${m[1]}` : ymd;
   }
 
+  private formatBrl(valor: number): string {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+    }).format(valor);
+  }
+
+  private notificarNovoLancamento(titulo: string, detalhe: string): void {
+    void Swal.fire({
+      toast: true,
+      position: 'top-end',
+      icon: 'success',
+      title: titulo,
+      text: detalhe,
+      showConfirmButton: false,
+      timer: 3200,
+      timerProgressBar: true,
+    });
+  }
+
   private coerceMoneyControl(controlName: string, form: FormGroup): void {
     const ctrl = form.get(controlName);
     const raw = ctrl?.value;
@@ -155,6 +176,10 @@ export class Feature {
       this.editingReceitaId.set(null);
     } else {
       this.store.addReceita(raw);
+      this.notificarNovoLancamento(
+        'Nova receita salva',
+        `${raw.descricao} · ${this.formatBrl(raw.valor)}`,
+      );
     }
     this.resetReceitaForm();
   }
@@ -172,6 +197,10 @@ export class Feature {
       this.editingDespesaId.set(null);
     } else {
       this.store.addDespesa(raw);
+      this.notificarNovoLancamento(
+        'Nova despesa salva',
+        `${raw.descricao} · ${this.formatBrl(raw.valor)}`,
+      );
     }
     this.resetDespesaForm();
   }
@@ -191,6 +220,10 @@ export class Feature {
       this.editingDividaId.set(null);
     } else {
       this.store.addDivida(raw);
+      this.notificarNovoLancamento(
+        'Nova dívida salva',
+        `${raw.credor} · saldo ${this.formatBrl(raw.saldoTotal)}`,
+      );
     }
     this.resetDividaForm();
   }

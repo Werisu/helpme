@@ -1,5 +1,6 @@
 @use 'theme-tokens.scss' as *;
 @import 'bootstrap/dist/css/bootstrap.min.css';
+@import 'sweetalert2/dist/sweetalert2.min.css';
 
 /* Feedback visual em botões (respeita prefers-reduced-motion nos tokens) */
 @media (prefers-reduced-motion: no-preference) {
