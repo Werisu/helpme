@@ -21,15 +21,22 @@ function currentMonthKey(): string {
 }
 
 /**
- * Compara mês usando o prefixo YYYY-MM da string (ex.: input type="date"),
- * sem passar por Date — evita deslocamento de fuso em "2026-04-01" etc.
+ * Verifica se a data (yyyy-MM-dd) pertence ao mês de referência yyyy-MM.
  */
-function isFromCurrentMonth(dateString: string): boolean {
+function dataNoMesReferencia(dateString: string, mesReferencia: string): boolean {
   const m = /^(\d{4})-(\d{2})/.exec(dateString.trim());
   if (!m) {
     return false;
   }
-  return `${m[1]}-${m[2]}` === currentMonthKey();
+  return `${m[1]}-${m[2]}` === mesReferencia;
+}
+
+function shiftMonth(ym: string, delta: number): string {
+  const parts = ym.split('-').map(Number);
+  const y = parts[0];
+  const mo = parts[1];
+  const d = new Date(y, mo - 1 + delta, 1);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
 }
 
 function normalizeMoney(value: unknown): number {
@@ -49,28 +56,46 @@ export class FinanceStore {
   private readonly receitasSignal = signal<Receita[]>([]);
   private readonly despesasSignal = signal<Despesa[]>([]);
   private readonly dividasSignal = signal<Divida[]>([]);
+  /** yyyy-MM — mês exibido nos resumos, alertas e listas de receitas/despesas */
+  private readonly mesReferenciaSignal = signal<string>(currentMonthKey());
 
   readonly receitas = this.receitasSignal.asReadonly();
   readonly despesas = this.despesasSignal.asReadonly();
   readonly dividas = this.dividasSignal.asReadonly();
+  readonly mesReferencia = this.mesReferenciaSignal.asReadonly();
 
-  readonly totalReceitasMes = computed(() =>
-    this.receitasSignal()
-      .filter((item) => isFromCurrentMonth(item.data))
-      .reduce((total, item) => total + normalizeMoney(item.valor), 0),
+  readonly mesReferenciaEhMesAtual = computed(
+    () => this.mesReferenciaSignal() === currentMonthKey(),
   );
 
-  readonly totalDespesasMes = computed(() =>
-    this.despesasSignal()
-      .filter((item) => isFromCurrentMonth(item.data))
-      .reduce((total, item) => total + normalizeMoney(item.valor), 0),
-  );
+  readonly mesReferenciaLegivel = computed(() => {
+    const ym = this.mesReferenciaSignal();
+    const [y, m] = ym.split('-').map(Number);
+    const d = new Date(y, m - 1, 1);
+    const s = d.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+    return s.charAt(0).toUpperCase() + s.slice(1);
+  });
 
-  readonly totalEssenciaisMes = computed(() =>
-    this.despesasSignal()
-      .filter((item) => item.essencial && isFromCurrentMonth(item.data))
-      .reduce((total, item) => total + normalizeMoney(item.valor), 0),
-  );
+  readonly totalReceitasMes = computed(() => {
+    const mes = this.mesReferenciaSignal();
+    return this.receitasSignal()
+      .filter((item) => dataNoMesReferencia(item.data, mes))
+      .reduce((total, item) => total + normalizeMoney(item.valor), 0);
+  });
+
+  readonly totalDespesasMes = computed(() => {
+    const mes = this.mesReferenciaSignal();
+    return this.despesasSignal()
+      .filter((item) => dataNoMesReferencia(item.data, mes))
+      .reduce((total, item) => total + normalizeMoney(item.valor), 0);
+  });
+
+  readonly totalEssenciaisMes = computed(() => {
+    const mes = this.mesReferenciaSignal();
+    return this.despesasSignal()
+      .filter((item) => item.essencial && dataNoMesReferencia(item.data, mes))
+      .reduce((total, item) => total + normalizeMoney(item.valor), 0);
+  });
 
   readonly totalParcelaMinima = computed(() =>
     this.dividasSignal().reduce((total, item) => total + normalizeMoney(item.parcelaMinima), 0),
@@ -109,6 +134,13 @@ export class FinanceStore {
 
   readonly alertasRisco = computed<AlertaRisco[]>(() => {
     const alertas: AlertaRisco[] = [];
+
+    if (!this.mesReferenciaEhMesAtual()) {
+      alertas.push({
+        tipo: 'info',
+        mensagem: `Resumo de ${this.mesReferenciaLegivel()}. Parcelas mínimas e dívidas usam o cadastro atual (não são históricas por mês).`,
+      });
+    }
 
     if (this.saldoProjetado() < 0) {
       alertas.push({
@@ -154,6 +186,30 @@ export class FinanceStore {
 
   constructor() {
     this.restore();
+  }
+
+  setMesReferencia(ym: string): void {
+    const trimmed = ym.trim();
+    if (!/^\d{4}-\d{2}$/.test(trimmed)) {
+      return;
+    }
+    const monthNum = Number(trimmed.slice(5, 7));
+    if (monthNum < 1 || monthNum > 12) {
+      return;
+    }
+    this.mesReferenciaSignal.set(trimmed);
+  }
+
+  mesAnterior(): void {
+    this.mesReferenciaSignal.update((ym) => shiftMonth(ym, -1));
+  }
+
+  mesSeguinte(): void {
+    this.mesReferenciaSignal.update((ym) => shiftMonth(ym, 1));
+  }
+
+  irParaMesAtual(): void {
+    this.mesReferenciaSignal.set(currentMonthKey());
   }
 
   addReceita(receita: Omit<Receita, 'id'>): void {

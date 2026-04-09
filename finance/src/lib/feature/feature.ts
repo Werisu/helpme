@@ -32,13 +32,19 @@ export class Feature {
   protected readonly editingDespesaId = signal<string | null>(null);
   protected readonly editingDividaId = signal<string | null>(null);
 
-  protected readonly receitasOrdenadas = computed(() =>
-    [...this.store.receitas()].sort((a, b) => b.data.localeCompare(a.data) || b.id.localeCompare(a.id)),
-  );
+  protected readonly receitasOrdenadas = computed(() => {
+    const mes = this.store.mesReferencia();
+    return [...this.store.receitas()]
+      .filter((r) => r.data.slice(0, 7) === mes)
+      .sort((a, b) => b.data.localeCompare(a.data) || b.id.localeCompare(a.id));
+  });
 
-  protected readonly despesasOrdenadas = computed(() =>
-    [...this.store.despesas()].sort((a, b) => b.data.localeCompare(a.data) || b.id.localeCompare(a.id)),
-  );
+  protected readonly despesasOrdenadas = computed(() => {
+    const mes = this.store.mesReferencia();
+    return [...this.store.despesas()]
+      .filter((d) => d.data.slice(0, 7) === mes)
+      .sort((a, b) => b.data.localeCompare(a.data) || b.id.localeCompare(a.id));
+  });
 
   protected readonly dividasOrdenadas = computed(() =>
     [...this.store.dividas()].sort((a, b) => a.credor.localeCompare(b.credor, 'pt-BR')),
@@ -46,6 +52,13 @@ export class Feature {
 
   protected setTheme(mode: ThemeMode): void {
     this.theme.setMode(mode);
+  }
+
+  protected definirMesReferencia(event: Event): void {
+    const el = event.target as HTMLInputElement;
+    if (el.value) {
+      this.store.setMesReferencia(el.value);
+    }
   }
 
   /** Exibe data ISO yyyy-MM-dd como dd/MM/yyyy (sem Date — evita fuso). */
