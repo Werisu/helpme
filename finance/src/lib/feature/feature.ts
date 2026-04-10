@@ -344,6 +344,26 @@ export class Feature {
     return m ? `${m[3]}/${m[2]}/${m[1]}` : ymd;
   }
 
+  protected legendaLinhasReceitas(): string {
+    const n = this.receitasOrdenadas().length;
+    return n === 1 ? '1 receita neste mês' : `${n} receitas neste mês`;
+  }
+
+  protected legendaLinhasDespesas(): string {
+    const n = this.despesasOrdenadas().length;
+    return n === 1 ? '1 despesa neste mês' : `${n} despesas neste mês`;
+  }
+
+  protected legendaLinhasDividas(): string {
+    const n = this.dividasOrdenadas().length;
+    return n === 1 ? '1 dívida cadastrada' : `${n} dívidas cadastradas`;
+  }
+
+  protected legendaLinhasPrioridade(): string {
+    const n = this.store.prioridadePagamento().length;
+    return n === 1 ? '1 linha na tabela' : `${n} linhas na tabela`;
+  }
+
   private formatBrl(valor: number): string {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',

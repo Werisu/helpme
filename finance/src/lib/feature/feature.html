@@ -548,6 +548,9 @@
               <h3 class="h5 mb-0">
                 Receitas — {{ store.mesReferenciaLegivel() }}
               </h3>
+              <p class="small text-secondary mb-0 mt-1">
+                {{ legendaLinhasReceitas() }}
+              </p>
             </div>
             <div class="card-body px-4 pb-4">
               <div class="table-responsive">
@@ -609,15 +612,20 @@
         <div class="col-12">
           <div class="card border-0 shadow-sm">
             <div
-              class="card-header bg-transparent border-0 pt-4 px-4 pb-0 d-flex flex-wrap align-items-center justify-content-between gap-2"
+              class="card-header bg-transparent border-0 pt-4 px-4 pb-0 d-flex flex-wrap align-items-start justify-content-between gap-2"
             >
-              <h3 class="h5 mb-0">
-                Despesas — {{ store.mesReferenciaLegivel() }}
-              </h3>
+              <div class="me-auto">
+                <h3 class="h5 mb-0">
+                  Despesas — {{ store.mesReferenciaLegivel() }}
+                </h3>
+                <p class="small text-secondary mb-0 mt-1">
+                  {{ legendaLinhasDespesas() }}
+                </p>
+              </div>
               @if (algumaDespesaSelecionada()) {
               <button
                 type="button"
-                class="btn btn-sm btn-outline-danger"
+                class="btn btn-sm btn-outline-danger align-self-center"
                 (click)="removerDespesasSelecionadas()"
               >
                 Excluir selecionadas
@@ -725,13 +733,18 @@
         <div class="col-12">
           <div class="card border-0 shadow-sm">
             <div
-              class="card-header bg-transparent border-0 pt-4 px-4 pb-0 d-flex flex-wrap align-items-center justify-content-between gap-2"
+              class="card-header bg-transparent border-0 pt-4 px-4 pb-0 d-flex flex-wrap align-items-start justify-content-between gap-2"
             >
-              <h3 class="h5 mb-0">Dívidas</h3>
+              <div class="me-auto">
+                <h3 class="h5 mb-0">Dívidas</h3>
+                <p class="small text-secondary mb-0 mt-1">
+                  {{ legendaLinhasDividas() }}
+                </p>
+              </div>
               @if (algumaDividaSelecionada()) {
               <button
                 type="button"
-                class="btn btn-sm btn-outline-danger"
+                class="btn btn-sm btn-outline-danger align-self-center"
                 (click)="removerDividasSelecionadas()"
               >
                 Excluir selecionadas ({{ dividasSelecionadasIds().size }})
@@ -847,6 +860,9 @@
           Capacidade calculada com receitas e despesas de
           <strong>{{ store.mesReferenciaLegivel() }}</strong>
           e parcelas mínimas do cadastro atual de dívidas.
+        </p>
+        <p class="small text-secondary mb-0 mt-2">
+          {{ legendaLinhasPrioridade() }}
         </p>
       </div>
       <div class="card-body pt-3 px-4">
