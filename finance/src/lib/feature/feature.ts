@@ -51,6 +51,60 @@ export class Feature {
     [...this.store.dividas()].sort((a, b) => a.credor.localeCompare(b.credor, 'pt-BR')),
   );
 
+  /** IDs marcados na tabela de dívidas para exclusão em lote. */
+  protected readonly dividasSelecionadasIds = signal(new Set<string>());
+
+  protected readonly todasDividasSelecionadas = computed(() => {
+    const lista = this.dividasOrdenadas();
+    const sel = this.dividasSelecionadasIds();
+    return lista.length > 0 && lista.every((d) => sel.has(d.id));
+  });
+
+  protected readonly algumaDividaSelecionada = computed(
+    () => this.dividasSelecionadasIds().size > 0,
+  );
+
+  protected toggleSelecionarDivida(id: string, checked: boolean): void {
+    this.dividasSelecionadasIds.update((prev) => {
+      const next = new Set(prev);
+      if (checked) {
+        next.add(id);
+      } else {
+        next.delete(id);
+      }
+      return next;
+    });
+  }
+
+  protected toggleMarcarTodasDividas(): void {
+    const lista = this.dividasOrdenadas();
+    if (lista.length === 0) {
+      return;
+    }
+    if (this.todasDividasSelecionadas()) {
+      this.dividasSelecionadasIds.set(new Set());
+    } else {
+      this.dividasSelecionadasIds.set(new Set(lista.map((d) => d.id)));
+    }
+  }
+
+  protected removerDividasSelecionadas(): void {
+    const ids = [...this.dividasSelecionadasIds()];
+    if (ids.length === 0) {
+      return;
+    }
+    const n = ids.length;
+    if (!confirm(`Remover ${n} dívida(s) selecionada(s)?`)) {
+      return;
+    }
+    const editing = this.editingDividaId();
+    if (editing && ids.includes(editing)) {
+      this.cancelarEdicaoDivida();
+    }
+    this.store.removeDividas(ids);
+    this.dividasSelecionadasIds.set(new Set());
+  }
+
   protected setTheme(mode: ThemeMode): void {
     this.theme.setMode(mode);
   }
@@ -90,6 +144,67 @@ export class Feature {
       this.cancelarEdicaoDespesa();
       this.cancelarEdicaoDivida();
       this.store.irParaMesAtual();
+      input.value = '';
+    };
+    reader.onerror = () => {
+      alert('Não foi possível ler o arquivo.');
+      input.value = '';
+    };
+    reader.readAsText(file, 'UTF-8');
+  }
+
+  protected importarDividasJsonMesclar(event: Event): void {
+    this.lerArquivoDividasJson(event, 'mesclar');
+  }
+
+  protected importarDividasJsonSubstituir(event: Event): void {
+    this.lerArquivoDividasJson(event, 'substituir');
+  }
+
+  private lerArquivoDividasJson(
+    event: Event,
+    modo: 'mesclar' | 'substituir',
+  ): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) {
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const text = reader.result as string;
+      const parsed = this.store.parseDividasJson(text);
+      if (!parsed.ok) {
+        alert(parsed.error);
+        input.value = '';
+        return;
+      }
+      const n = parsed.dividas.length;
+      const atual = this.store.dividas().length;
+      if (modo === 'mesclar') {
+        if (n === 0) {
+          alert('O arquivo não contém dívidas válidas para adicionar.');
+          input.value = '';
+          return;
+        }
+        if (
+          !confirm(
+            `Adicionar ${n} dívida(s) às ${atual} já cadastradas? IDs duplicados serão trocados automaticamente.`,
+          )
+        ) {
+          input.value = '';
+          return;
+        }
+        this.store.mergeImportedDividas(parsed.dividas);
+      } else {
+        const msg = `Substituir todas as ${atual} dívidas locais por ${n} do arquivo? Receitas e despesas não mudam.`;
+        if (!confirm(msg)) {
+          input.value = '';
+          return;
+        }
+        this.store.replaceDividasImport(parsed.dividas);
+      }
+      this.cancelarEdicaoDivida();
       input.value = '';
     };
     reader.onerror = () => {
@@ -293,6 +408,14 @@ export class Feature {
       this.cancelarEdicaoDivida();
     }
     this.store.removeDivida(item.id);
+    this.dividasSelecionadasIds.update((prev) => {
+      if (!prev.has(item.id)) {
+        return prev;
+      }
+      const next = new Set(prev);
+      next.delete(item.id);
+      return next;
+    });
   }
 
   protected cancelarEdicaoReceita(): void {

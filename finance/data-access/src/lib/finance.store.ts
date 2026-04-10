@@ -149,6 +149,27 @@ export type FinanceBackupParseResult =
   | { ok: true; state: FinanceState }
   | { ok: false; error: string };
 
+export type FinanceDividasJsonParseResult =
+  | { ok: true; dividas: Divida[] }
+  | { ok: false; error: string };
+
+function extractDividasArrayFromParsed(parsed: unknown): unknown[] | null {
+  if (Array.isArray(parsed)) {
+    return parsed;
+  }
+  if (!parsed || typeof parsed !== 'object') {
+    return null;
+  }
+  const root = parsed as Record<string, unknown>;
+  const dataNode = root['data'];
+  const inner =
+    dataNode && typeof dataNode === 'object'
+      ? (dataNode as Record<string, unknown>)
+      : root;
+  const dividasRaw = inner['dividas'];
+  return Array.isArray(dividasRaw) ? dividasRaw : null;
+}
+
 @Injectable({ providedIn: 'root' })
 export class FinanceStore {
   private readonly receitasSignal = signal<Receita[]>([]);
@@ -430,6 +451,15 @@ export class FinanceStore {
     this.persist();
   }
 
+  removeDividas(ids: string[]): void {
+    if (ids.length === 0) {
+      return;
+    }
+    const idSet = new Set(ids);
+    this.dividasSignal.set(this.dividasSignal().filter((item) => !idSet.has(item.id)));
+    this.persist();
+  }
+
   /** Backup completo (mesmo conteúdo persistido + metadados). */
   downloadJsonBackup(): void {
     const exportedAt = new Date().toISOString();
@@ -527,6 +557,61 @@ export class FinanceStore {
     this.receitasSignal.set(state.receitas);
     this.despesasSignal.set(state.despesas);
     this.dividasSignal.set(state.dividas);
+    this.persist();
+  }
+
+  /**
+   * JSON só com dívidas: array `[{...}]` ou `{ "dividas": [...] }` (também vale um backup
+   * completo — apenas o array `dividas` é lido). Mesmos campos de `mapDividaImport`.
+   */
+  parseDividasJson(text: string): FinanceDividasJsonParseResult {
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(text);
+    } catch {
+      return { ok: false, error: 'O arquivo não é um JSON válido.' };
+    }
+    const dividasRaw = extractDividasArrayFromParsed(parsed);
+    if (dividasRaw === null) {
+      return {
+        ok: false,
+        error:
+          'Use um array de objetos ou um objeto com a propriedade "dividas" (array).',
+      };
+    }
+    const dividas = dividasRaw.map(mapDividaImport).filter((x): x is Divida => x !== null);
+    if (dividasRaw.length > 0 && dividas.length === 0) {
+      return {
+        ok: false,
+        error: 'Nenhuma dívida válida: credor, saldoTotal e parcelaMinima são obrigatórios.',
+      };
+    }
+    return { ok: true, dividas };
+  }
+
+  /** Anexa dívidas importadas. Se o `id` já existir, gera outro para não sobrescrever. */
+  mergeImportedDividas(novas: Divida[]): void {
+    if (novas.length === 0) {
+      return;
+    }
+    const existing = this.dividasSignal();
+    const idSet = new Set(existing.map((d) => d.id));
+    const merged = [...existing];
+    for (const d of novas) {
+      let id = d.id;
+      if (idSet.has(id)) {
+        id = crypto.randomUUID();
+      }
+      idSet.add(id);
+      merged.push({ ...d, id });
+    }
+    this.dividasSignal.set(merged);
+    this.persist();
+  }
+
+  /** Substitui apenas a lista de dívidas (receitas e despesas inalteradas). */
+  replaceDividasImport(novas: Divida[]): void {
+    this.dividasSignal.set(novas);
     this.persist();
   }
 

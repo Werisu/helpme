@@ -682,14 +682,40 @@
 
         <div class="col-12">
           <div class="card border-0 shadow-sm">
-            <div class="card-header bg-transparent border-0 pt-4 px-4 pb-0">
+            <div
+              class="card-header bg-transparent border-0 pt-4 px-4 pb-0 d-flex flex-wrap align-items-center justify-content-between gap-2"
+            >
               <h3 class="h5 mb-0">Dívidas</h3>
+              @if (algumaDividaSelecionada()) {
+              <button
+                type="button"
+                class="btn btn-sm btn-outline-danger"
+                (click)="removerDividasSelecionadas()"
+              >
+                Excluir selecionadas ({{ dividasSelecionadasIds().size }})
+              </button>
+              }
             </div>
             <div class="card-body px-4 pb-4">
               <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
                   <thead class="hm-table-head">
                     <tr>
+                      <th
+                        class="text-center"
+                        scope="col"
+                        style="width: 2.75rem"
+                        title="Marcar todas para excluir"
+                      >
+                        <input
+                          type="checkbox"
+                          class="form-check-input m-0"
+                          [disabled]="dividasOrdenadas().length === 0"
+                          [checked]="todasDividasSelecionadas()"
+                          (change)="toggleMarcarTodasDividas()"
+                          aria-label="Marcar todas as dívidas para excluir"
+                        />
+                      </th>
                       <th>Credor</th>
                       <th class="text-end">Saldo</th>
                       <th class="text-end">Mínimo</th>
@@ -701,6 +727,22 @@
                   <tbody>
                     @for (div of dividasOrdenadas(); track div.id) {
                     <tr [class.table-primary]="editingDividaId() === div.id">
+                      <td class="text-center">
+                        <input
+                          type="checkbox"
+                          class="form-check-input m-0"
+                          [checked]="dividasSelecionadasIds().has(div.id)"
+                          (change)="
+                            toggleSelecionarDivida(
+                              div.id,
+                              $any($event.target).checked
+                            )
+                          "
+                          [attr.aria-label]="
+                            'Marcar dívida ' + div.credor + ' para excluir'
+                          "
+                        />
+                      </td>
                       <td class="fw-semibold">{{ div.credor }}</td>
                       <td class="text-end">
                         {{ div.saldoTotal | currency : 'BRL' : 'symbol' :
@@ -739,7 +781,7 @@
                     </tr>
                     } @empty {
                     <tr>
-                      <td colspan="6" class="text-center text-secondary py-4">
+                      <td colspan="7" class="text-center text-secondary py-4">
                         Nenhuma dívida cadastrada.
                       </td>
                     </tr>
@@ -883,6 +925,66 @@
                 (click)="store.downloadCsvDividas()"
               >
                 CSV dívidas
+              </button>
+            </div>
+          </div>
+          <div class="col-12">
+            <hr class="my-1 border-secondary-subtle" />
+            <h3 class="h6 text-uppercase text-secondary fw-bold mb-2">
+              Importar dívidas (JSON)
+            </h3>
+            <p class="small text-secondary mb-2">
+              Formatos aceitos: <code>[&#123;…&#125;, …]</code> ou
+              <code>&#123; "dividas": […] &#125;</code>. O trecho
+              <code>dividas</code> de um backup completo também funciona.
+            </p>
+            <ul class="small text-secondary ps-3 mb-3">
+              <li>
+                Obrigatórios por item: <code>credor</code>,
+                <code>saldoTotal</code> e <code>parcelaMinima</code>.
+              </li>
+              <li>
+                Opcionais: <code>jurosMensal</code> (padrão 0),
+                <code>vencimentoDia</code> (1 a 31, padrão 10) e
+                <code>id</code>.
+              </li>
+              <li>
+                <strong>Mesclar</strong> adiciona novas dívidas sem apagar as
+                atuais.
+              </li>
+              <li>
+                <strong>Substituir</strong> remove todas as dívidas atuais e
+                usa apenas as do arquivo.
+              </li>
+            </ul>
+            <div class="d-flex flex-wrap gap-2">
+              <input
+                #jsonDividasMesclarInput
+                type="file"
+                class="d-none"
+                accept=".json,application/json"
+                (change)="importarDividasJsonMesclar($event)"
+              />
+              <button
+                type="button"
+                class="btn btn-outline-primary hm-touch-btn"
+                (click)="jsonDividasMesclarInput.click()"
+              >
+                Mesclar com dívidas atuais…
+              </button>
+              <input
+                #jsonDividasSubstituirInput
+                type="file"
+                class="d-none"
+                accept=".json,application/json"
+                (change)="importarDividasJsonSubstituir($event)"
+              />
+              <button
+                type="button"
+                class="btn btn-outline-danger hm-touch-btn"
+                (click)="jsonDividasSubstituirInput.click()"
+              >
+                Substituir todas as dívidas…
               </button>
             </div>
           </div>
