@@ -153,6 +153,10 @@ export type FinanceDividasJsonParseResult =
   | { ok: true; dividas: Divida[] }
   | { ok: false; error: string };
 
+export type FinanceDespesasJsonParseResult =
+  | { ok: true; despesas: Despesa[] }
+  | { ok: false; error: string };
+
 function extractDividasArrayFromParsed(parsed: unknown): unknown[] | null {
   if (Array.isArray(parsed)) {
     return parsed;
@@ -168,6 +172,23 @@ function extractDividasArrayFromParsed(parsed: unknown): unknown[] | null {
       : root;
   const dividasRaw = inner['dividas'];
   return Array.isArray(dividasRaw) ? dividasRaw : null;
+}
+
+function extractDespesasArrayFromParsed(parsed: unknown): unknown[] | null {
+  if (Array.isArray(parsed)) {
+    return parsed;
+  }
+  if (!parsed || typeof parsed !== 'object') {
+    return null;
+  }
+  const root = parsed as Record<string, unknown>;
+  const dataNode = root['data'];
+  const inner =
+    dataNode && typeof dataNode === 'object'
+      ? (dataNode as Record<string, unknown>)
+      : root;
+  const despesasRaw = inner['despesas'];
+  return Array.isArray(despesasRaw) ? despesasRaw : null;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -587,6 +608,62 @@ export class FinanceStore {
       };
     }
     return { ok: true, dividas };
+  }
+
+  /**
+   * JSON só com despesas: array `[{...}]` ou `{ "despesas": [...] }` (também vale um backup
+   * completo — apenas o array `despesas` é lido). Mesmos campos de `mapDespesaImport`.
+   */
+  parseDespesasJson(text: string): FinanceDespesasJsonParseResult {
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(text);
+    } catch {
+      return { ok: false, error: 'O arquivo não é um JSON válido.' };
+    }
+    const despesasRaw = extractDespesasArrayFromParsed(parsed);
+    if (despesasRaw === null) {
+      return {
+        ok: false,
+        error:
+          'Use um array de objetos ou um objeto com a propriedade "despesas" (array).',
+      };
+    }
+    const despesas = despesasRaw.map(mapDespesaImport).filter((x): x is Despesa => x !== null);
+    if (despesasRaw.length > 0 && despesas.length === 0) {
+      return {
+        ok: false,
+        error:
+          'Nenhuma despesa válida: descrição, categoria, valor (> 0) e data são obrigatórios.',
+      };
+    }
+    return { ok: true, despesas };
+  }
+
+  /** Anexa despesas importadas. Se o `id` já existir, gera outro para não sobrescrever. */
+  mergeImportedDespesas(novas: Despesa[]): void {
+    if (novas.length === 0) {
+      return;
+    }
+    const existing = this.despesasSignal();
+    const idSet = new Set(existing.map((d) => d.id));
+    const merged = [...existing];
+    for (const d of novas) {
+      let id = d.id;
+      if (idSet.has(id)) {
+        id = crypto.randomUUID();
+      }
+      idSet.add(id);
+      merged.push({ ...d, id });
+    }
+    this.despesasSignal.set(merged);
+    this.persist();
+  }
+
+  /** Substitui apenas a lista de despesas (receitas e dívidas inalteradas). */
+  replaceDespesasImport(novas: Despesa[]): void {
+    this.despesasSignal.set(novas);
+    this.persist();
   }
 
   /** Anexa dívidas importadas. Se o `id` já existir, gera outro para não sobrescrever. */

@@ -931,6 +931,64 @@
           <div class="col-12">
             <hr class="my-1 border-secondary-subtle" />
             <h3 class="h6 text-uppercase text-secondary fw-bold mb-2">
+              Importar despesas (JSON)
+            </h3>
+            <p class="small text-secondary mb-2">
+              Formatos aceitos: <code>[&#123;…&#125;, …]</code> ou
+              <code>&#123; "despesas": […] &#125;</code>. O trecho
+              <code>despesas</code> de um backup completo também funciona.
+            </p>
+            <ul class="small text-secondary ps-3 mb-3">
+              <li>
+                Obrigatórios por item: <code>descricao</code>,
+                <code>categoria</code>, <code>valor</code> (&gt; 0) e
+                <code>data</code> (yyyy-MM-dd).
+              </li>
+              <li>
+                Opcional: <code>essencial</code> (padrão falso; aceita
+                <code>true</code>, <code>"sim"</code> ou <code>1</code>) e
+                <code>id</code>.
+              </li>
+              <li>
+                <strong>Mesclar</strong> adiciona novas despesas sem apagar as
+                atuais.
+              </li>
+              <li>
+                <strong>Substituir</strong> remove todas as despesas atuais e
+                usa apenas as do arquivo.
+              </li>
+            </ul>
+            <div class="d-flex flex-wrap gap-2 mb-4">
+              <input
+                #jsonDespesasMesclarInput
+                type="file"
+                class="d-none"
+                accept=".json,application/json"
+                (change)="importarDespesasJsonMesclar($event)"
+              />
+              <button
+                type="button"
+                class="btn btn-outline-primary hm-touch-btn"
+                (click)="jsonDespesasMesclarInput.click()"
+              >
+                Mesclar com despesas atuais…
+              </button>
+              <input
+                #jsonDespesasSubstituirInput
+                type="file"
+                class="d-none"
+                accept=".json,application/json"
+                (change)="importarDespesasJsonSubstituir($event)"
+              />
+              <button
+                type="button"
+                class="btn btn-outline-danger hm-touch-btn"
+                (click)="jsonDespesasSubstituirInput.click()"
+              >
+                Substituir todas as despesas…
+              </button>
+            </div>
+            <h3 class="h6 text-uppercase text-secondary fw-bold mb-2">
               Importar dívidas (JSON)
             </h3>
             <p class="small text-secondary mb-2">

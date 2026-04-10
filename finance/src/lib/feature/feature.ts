@@ -153,12 +153,73 @@ export class Feature {
     reader.readAsText(file, 'UTF-8');
   }
 
+  protected importarDespesasJsonMesclar(event: Event): void {
+    this.lerArquivoDespesasJson(event, 'mesclar');
+  }
+
+  protected importarDespesasJsonSubstituir(event: Event): void {
+    this.lerArquivoDespesasJson(event, 'substituir');
+  }
+
   protected importarDividasJsonMesclar(event: Event): void {
     this.lerArquivoDividasJson(event, 'mesclar');
   }
 
   protected importarDividasJsonSubstituir(event: Event): void {
     this.lerArquivoDividasJson(event, 'substituir');
+  }
+
+  private lerArquivoDespesasJson(
+    event: Event,
+    modo: 'mesclar' | 'substituir',
+  ): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) {
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const text = reader.result as string;
+      const parsed = this.store.parseDespesasJson(text);
+      if (!parsed.ok) {
+        alert(parsed.error);
+        input.value = '';
+        return;
+      }
+      const n = parsed.despesas.length;
+      const atual = this.store.despesas().length;
+      if (modo === 'mesclar') {
+        if (n === 0) {
+          alert('O arquivo não contém despesas válidas para adicionar.');
+          input.value = '';
+          return;
+        }
+        if (
+          !confirm(
+            `Adicionar ${n} despesa(s) às ${atual} já cadastradas? IDs duplicados serão trocados automaticamente.`,
+          )
+        ) {
+          input.value = '';
+          return;
+        }
+        this.store.mergeImportedDespesas(parsed.despesas);
+      } else {
+        const msg = `Substituir todas as ${atual} despesas locais por ${n} do arquivo? Receitas e dívidas não mudam.`;
+        if (!confirm(msg)) {
+          input.value = '';
+          return;
+        }
+        this.store.replaceDespesasImport(parsed.despesas);
+      }
+      this.cancelarEdicaoDespesa();
+      input.value = '';
+    };
+    reader.onerror = () => {
+      alert('Não foi possível ler o arquivo.');
+      input.value = '';
+    };
+    reader.readAsText(file, 'UTF-8');
   }
 
   private lerArquivoDividasJson(
