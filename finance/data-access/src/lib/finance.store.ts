@@ -467,6 +467,15 @@ export class FinanceStore {
     this.persist();
   }
 
+  removeDespesas(ids: string[]): void {
+    if (ids.length === 0) {
+      return;
+    }
+    const idSet = new Set(ids);
+    this.despesasSignal.set(this.despesasSignal().filter((item) => !idSet.has(item.id)));
+    this.persist();
+  }
+
   removeDivida(id: string): void {
     this.dividasSignal.set(this.dividasSignal().filter((item) => item.id !== id));
     this.persist();

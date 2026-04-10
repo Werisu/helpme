@@ -51,6 +51,69 @@ export class Feature {
     [...this.store.dividas()].sort((a, b) => a.credor.localeCompare(b.credor, 'pt-BR')),
   );
 
+  /** IDs marcados na tabela de despesas para exclusão em lote. */
+  protected readonly despesasSelecionadasIds = signal(new Set<string>());
+
+  protected readonly todasDespesasSelecionadas = computed(() => {
+    const lista = this.despesasOrdenadas();
+    const sel = this.despesasSelecionadasIds();
+    return lista.length > 0 && lista.every((d) => sel.has(d.id));
+  });
+
+  protected readonly algumaDespesaSelecionada = computed(
+    () =>
+      this.despesasOrdenadas().some((d) => this.despesasSelecionadasIds().has(d.id)),
+  );
+
+  protected toggleSelecionarDespesa(id: string, checked: boolean): void {
+    this.despesasSelecionadasIds.update((prev) => {
+      const next = new Set(prev);
+      if (checked) {
+        next.add(id);
+      } else {
+        next.delete(id);
+      }
+      return next;
+    });
+  }
+
+  protected toggleMarcarTodasDespesas(): void {
+    const lista = this.despesasOrdenadas();
+    if (lista.length === 0) {
+      return;
+    }
+    if (this.todasDespesasSelecionadas()) {
+      this.despesasSelecionadasIds.set(new Set());
+    } else {
+      this.despesasSelecionadasIds.set(new Set(lista.map((d) => d.id)));
+    }
+  }
+
+  protected removerDespesasSelecionadas(): void {
+    const idsVisiveis = this.despesasOrdenadas()
+      .map((d) => d.id)
+      .filter((id) => this.despesasSelecionadasIds().has(id));
+    if (idsVisiveis.length === 0) {
+      return;
+    }
+    const n = idsVisiveis.length;
+    if (!confirm(`Remover ${n} despesa(s) selecionada(s)?`)) {
+      return;
+    }
+    const editing = this.editingDespesaId();
+    if (editing && idsVisiveis.includes(editing)) {
+      this.cancelarEdicaoDespesa();
+    }
+    this.store.removeDespesas(idsVisiveis);
+    this.despesasSelecionadasIds.update((prev) => {
+      const next = new Set(prev);
+      for (const id of idsVisiveis) {
+        next.delete(id);
+      }
+      return next;
+    });
+  }
+
   /** IDs marcados na tabela de dívidas para exclusão em lote. */
   protected readonly dividasSelecionadasIds = signal(new Set<string>());
 
@@ -459,6 +522,14 @@ export class Feature {
       this.cancelarEdicaoDespesa();
     }
     this.store.removeDespesa(item.id);
+    this.despesasSelecionadasIds.update((prev) => {
+      if (!prev.has(item.id)) {
+        return prev;
+      }
+      const next = new Set(prev);
+      next.delete(item.id);
+      return next;
+    });
   }
 
   protected removerDivida(item: Divida): void {

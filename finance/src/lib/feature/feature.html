@@ -608,16 +608,42 @@
 
         <div class="col-12">
           <div class="card border-0 shadow-sm">
-            <div class="card-header bg-transparent border-0 pt-4 px-4 pb-0">
+            <div
+              class="card-header bg-transparent border-0 pt-4 px-4 pb-0 d-flex flex-wrap align-items-center justify-content-between gap-2"
+            >
               <h3 class="h5 mb-0">
                 Despesas — {{ store.mesReferenciaLegivel() }}
               </h3>
+              @if (algumaDespesaSelecionada()) {
+              <button
+                type="button"
+                class="btn btn-sm btn-outline-danger"
+                (click)="removerDespesasSelecionadas()"
+              >
+                Excluir selecionadas
+              </button>
+              }
             </div>
             <div class="card-body px-4 pb-4">
               <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
                   <thead class="hm-table-head">
                     <tr>
+                      <th
+                        class="text-center"
+                        scope="col"
+                        style="width: 2.75rem"
+                        title="Marcar todas para excluir"
+                      >
+                        <input
+                          type="checkbox"
+                          class="form-check-input hm-table-check m-0"
+                          [disabled]="despesasOrdenadas().length === 0"
+                          [checked]="todasDespesasSelecionadas()"
+                          (change)="toggleMarcarTodasDespesas()"
+                          aria-label="Marcar todas as despesas para excluir"
+                        />
+                      </th>
                       <th>Data</th>
                       <th>Descrição</th>
                       <th>Categoria</th>
@@ -629,6 +655,22 @@
                   <tbody>
                     @for (d of despesasOrdenadas(); track d.id) {
                     <tr [class.table-primary]="editingDespesaId() === d.id">
+                      <td class="text-center">
+                        <input
+                          type="checkbox"
+                          class="form-check-input hm-table-check m-0"
+                          [checked]="despesasSelecionadasIds().has(d.id)"
+                          (change)="
+                            toggleSelecionarDespesa(
+                              d.id,
+                              $any($event.target).checked
+                            )
+                          "
+                          [attr.aria-label]="
+                            'Marcar despesa ' + d.descricao + ' para excluir'
+                          "
+                        />
+                      </td>
                       <td>{{ formatarDataIso(d.data) }}</td>
                       <td class="fw-semibold">{{ d.descricao }}</td>
                       <td>{{ d.categoria }}</td>
@@ -667,7 +709,7 @@
                     </tr>
                     } @empty {
                     <tr>
-                      <td colspan="6" class="text-center text-secondary py-4">
+                      <td colspan="7" class="text-center text-secondary py-4">
                         Nenhuma despesa neste mês. Troque o período no topo ou
                         cadastre com data neste mês.
                       </td>
@@ -709,7 +751,7 @@
                       >
                         <input
                           type="checkbox"
-                          class="form-check-input m-0"
+                          class="form-check-input hm-table-check m-0"
                           [disabled]="dividasOrdenadas().length === 0"
                           [checked]="todasDividasSelecionadas()"
                           (change)="toggleMarcarTodasDividas()"
@@ -730,7 +772,7 @@
                       <td class="text-center">
                         <input
                           type="checkbox"
-                          class="form-check-input m-0"
+                          class="form-check-input hm-table-check m-0"
                           [checked]="dividasSelecionadasIds().has(div.id)"
                           (change)="
                             toggleSelecionarDivida(
