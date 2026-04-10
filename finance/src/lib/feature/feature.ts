@@ -457,6 +457,10 @@ export class Feature {
     if (id) {
       this.store.updateDivida(id, raw);
       this.editingDividaId.set(null);
+      this.notificarNovoLancamento(
+        'Dívida atualizada',
+        `${raw.credor} · saldo ${this.formatBrl(raw.saldoTotal)}`,
+      );
     } else {
       this.store.addDivida(raw);
       this.notificarNovoLancamento(
