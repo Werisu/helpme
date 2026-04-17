@@ -350,8 +350,26 @@ export class Feature {
   }
 
   protected legendaLinhasDespesas(): string {
-    const n = this.despesasOrdenadas().length;
-    return n === 1 ? '1 despesa neste mês' : `${n} despesas neste mês`;
+    const lista = this.despesasOrdenadas();
+    const n = lista.length;
+    if (n === 0) {
+      return '0 despesas neste mês';
+    }
+    const aPagar = lista.filter((d) => !d.paga).length;
+    const pagas = n - aPagar;
+    const base = n === 1 ? '1 despesa neste mês' : `${n} despesas neste mês`;
+    if (pagas === 0) {
+      return `${base} · todas a pagar`;
+    }
+    if (aPagar === 0) {
+      return `${base} · todas pagas`;
+    }
+    return `${base} · ${aPagar} a pagar, ${pagas} pagas`;
+  }
+
+  protected alternarDespesaPaga(item: Despesa, event: Event): void {
+    const el = event.target as HTMLInputElement;
+    this.store.setDespesaPaga(item.id, el.checked);
   }
 
   protected legendaLinhasDividas(): string {
@@ -412,6 +430,7 @@ export class Feature {
     valor: [0, [Validators.required, Validators.min(0.01)]],
     data: [new Date().toISOString().slice(0, 10), [Validators.required]],
     essencial: [true],
+    paga: [false],
   });
 
   protected readonly dividaForm = this.fb.nonNullable.group({
@@ -512,6 +531,7 @@ export class Feature {
       valor: item.valor,
       data: item.data,
       essencial: item.essencial,
+      paga: item.paga,
     });
   }
 
@@ -604,6 +624,7 @@ export class Feature {
       valor: 0,
       data: new Date().toISOString().slice(0, 10),
       essencial: true,
+      paga: false,
     });
   }
 

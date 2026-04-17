@@ -116,9 +116,23 @@ function mapDespesaImport(x: unknown): Despesa | null {
     r['essencial'] === 'sim' ||
     r['essencial'] === 1;
   const essencial = Boolean(ess);
+  const pg =
+    r['paga'] === true ||
+    r['paga'] === 'true' ||
+    r['paga'] === 'sim' ||
+    r['paga'] === 1 ||
+    r['contaPaga'] === true ||
+    r['contaPaga'] === 'true' ||
+    r['contaPaga'] === 'sim' ||
+    r['contaPaga'] === 1 ||
+    r['pago'] === true ||
+    r['pago'] === 'true' ||
+    r['pago'] === 'sim' ||
+    r['pago'] === 1;
+  const paga = Boolean(pg);
   const rid = r['id'];
   const id = typeof rid === 'string' && rid.length > 0 ? rid : crypto.randomUUID();
-  return { id, descricao, categoria, valor, data, essencial };
+  return { id, descricao, categoria, valor, data, essencial, paga };
 }
 
 function mapDividaImport(x: unknown): Divida | null {
@@ -223,17 +237,29 @@ export class FinanceStore {
       .reduce((total, item) => total + normalizeMoney(item.valor), 0);
   });
 
+  /** Soma despesas do mês ainda não pagas (compromisso de caixa). */
   readonly totalDespesasMes = computed(() => {
     const mes = this.mesReferenciaSignal();
     return this.despesasSignal()
-      .filter((item) => dataNoMesReferencia(item.data, mes))
+      .filter((item) => dataNoMesReferencia(item.data, mes) && !item.paga)
+      .reduce((total, item) => total + normalizeMoney(item.valor), 0);
+  });
+
+  /** Soma despesas do mês já quitadas. */
+  readonly totalDespesasMesPagas = computed(() => {
+    const mes = this.mesReferenciaSignal();
+    return this.despesasSignal()
+      .filter((item) => dataNoMesReferencia(item.data, mes) && item.paga)
       .reduce((total, item) => total + normalizeMoney(item.valor), 0);
   });
 
   readonly totalEssenciaisMes = computed(() => {
     const mes = this.mesReferenciaSignal();
     return this.despesasSignal()
-      .filter((item) => item.essencial && dataNoMesReferencia(item.data, mes))
+      .filter(
+        (item) =>
+          item.essencial && dataNoMesReferencia(item.data, mes) && !item.paga,
+      )
       .reduce((total, item) => total + normalizeMoney(item.valor), 0);
   });
 
@@ -432,6 +458,18 @@ export class FinanceStore {
     this.persist();
   }
 
+  setDespesaPaga(id: string, paga: boolean): void {
+    const list = this.despesasSignal();
+    const idx = list.findIndex((item) => item.id === id);
+    if (idx === -1) {
+      return;
+    }
+    const next = [...list];
+    next[idx] = { ...list[idx], paga };
+    this.despesasSignal.set(next);
+    this.persist();
+  }
+
   updateDivida(id: string, divida: Omit<Divida, 'id'>): void {
     const saldoTotal = normalizeMoney(divida.saldoTotal);
     const parcelaMinima = normalizeMoney(divida.parcelaMinima);
@@ -518,9 +556,17 @@ export class FinanceStore {
 
   downloadCsvDespesas(): void {
     const lines = [
-      csvRow(['id', 'descricao', 'categoria', 'valor', 'data', 'essencial']),
+      csvRow(['id', 'descricao', 'categoria', 'valor', 'data', 'essencial', 'paga']),
       ...this.despesasSignal().map((d) =>
-        csvRow([d.id, d.descricao, d.categoria, d.valor, d.data, d.essencial ? 'sim' : 'nao']),
+        csvRow([
+          d.id,
+          d.descricao,
+          d.categoria,
+          d.valor,
+          d.data,
+          d.essencial ? 'sim' : 'nao',
+          d.paga ? 'sim' : 'nao',
+        ]),
       ),
     ];
     const blob = new Blob([`\uFEFF${lines.join('\n')}`], { type: 'text/csv;charset=utf-8' });
@@ -719,7 +765,13 @@ export class FinanceStore {
     try {
       const state = JSON.parse(raw) as Partial<FinanceState>;
       this.receitasSignal.set(state.receitas ?? []);
-      this.despesasSignal.set(state.despesas ?? []);
+      const despesasRaw = state.despesas ?? [];
+      this.despesasSignal.set(
+        despesasRaw.map((d) => ({
+          ...(d as Despesa),
+          paga: Boolean((d as Despesa).paga),
+        })),
+      );
       this.dividasSignal.set(state.dividas ?? []);
     } catch {
       localStorage.removeItem(STORAGE_KEY);

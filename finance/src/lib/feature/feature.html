@@ -199,10 +199,18 @@
         </div>
         <div class="col-12 col-sm-6 col-xl">
           <lib-finance-stat-card
-            [title]="'Despesas · ' + store.mesReferenciaLegivel()"
+            [title]="'Despesas a pagar · ' + store.mesReferenciaLegivel()"
             [value]="store.totalDespesasMes()"
             valueType="currency"
             tone="default"
+          />
+        </div>
+        <div class="col-12 col-sm-6 col-xl">
+          <lib-finance-stat-card
+            [title]="'Despesas pagas · ' + store.mesReferenciaLegivel()"
+            [value]="store.totalDespesasMesPagas()"
+            valueType="currency"
+            tone="ok"
           />
         </div>
         <div class="col-12 col-sm-6 col-xl">
@@ -414,6 +422,38 @@
                       id="despesaEssencial"
                       role="switch"
                       [attr.aria-checked]="despesaForm.get('essencial')?.value === true"
+                    />
+                  </div>
+                </div>
+              </div>
+              <div class="hm-essencial-toggle mb-3">
+                <div
+                  class="d-flex align-items-center justify-content-between gap-3 flex-wrap"
+                >
+                  <div class="hm-essencial-toggle-text flex-grow-1 min-w-0">
+                    <span class="hm-essencial-toggle-badge text-uppercase"
+                      >Pagamento</span
+                    >
+                    <label
+                      class="hm-essencial-toggle-title mb-0"
+                      for="despesaPaga"
+                      >Conta paga</label
+                    >
+                    <p class="hm-essencial-toggle-hint mb-0 small">
+                      Quando marcado, a despesa deixa de contar no “a pagar” e no
+                      saldo projetado deste mês.
+                    </p>
+                  </div>
+                  <div
+                    class="form-check form-switch hm-essencial-switch flex-shrink-0"
+                  >
+                    <input
+                      class="form-check-input"
+                      formControlName="paga"
+                      type="checkbox"
+                      id="despesaPaga"
+                      role="switch"
+                      [attr.aria-checked]="despesaForm.get('paga')?.value === true"
                     />
                   </div>
                 </div>
@@ -656,13 +696,24 @@
                       <th>Descrição</th>
                       <th>Categoria</th>
                       <th>Essencial</th>
+                      <th
+                        class="text-center"
+                        scope="col"
+                        style="width: 2.75rem"
+                        title="Conta paga"
+                      >
+                        Paga
+                      </th>
                       <th class="text-end">Valor</th>
                       <th class="text-end text-nowrap">Ações</th>
                     </tr>
                   </thead>
                   <tbody>
                     @for (d of despesasOrdenadas(); track d.id) {
-                    <tr [class.table-primary]="editingDespesaId() === d.id">
+                    <tr
+                      [class.table-primary]="editingDespesaId() === d.id"
+                      [class.table-light]="d.paga && editingDespesaId() !== d.id"
+                    >
                       <td class="text-center">
                         <input
                           type="checkbox"
@@ -688,6 +739,18 @@
                         } @else {
                         <span class="badge text-bg-light border">Não</span>
                         }
+                      </td>
+                      <td class="text-center">
+                        <input
+                          type="checkbox"
+                          class="form-check-input hm-table-check m-0"
+                          [checked]="d.paga"
+                          (change)="alternarDespesaPaga(d, $event)"
+                          [attr.aria-label]="
+                            (d.paga ? 'Marcar como não paga: ' : 'Marcar como paga: ') +
+                            d.descricao
+                          "
+                        />
                       </td>
                       <td class="text-end">
                         {{ d.valor | currency : 'BRL' : 'symbol' : '1.2-2' :
@@ -717,7 +780,7 @@
                     </tr>
                     } @empty {
                     <tr>
-                      <td colspan="7" class="text-center text-secondary py-4">
+                      <td colspan="8" class="text-center text-secondary py-4">
                         Nenhuma despesa neste mês. Troque o período no topo ou
                         cadastre com data neste mês.
                       </td>
@@ -1004,8 +1067,9 @@
               </li>
               <li>
                 Opcional: <code>essencial</code> (padrão falso; aceita
-                <code>true</code>, <code>"sim"</code> ou <code>1</code>) e
-                <code>id</code>.
+                <code>true</code>, <code>"sim"</code> ou <code>1</code>),
+                <code>paga</code> / <code>contaPaga</code> (conta quitada;
+                padrão falso) e <code>id</code>.
               </li>
               <li>
                 <strong>Mesclar</strong> adiciona novas despesas sem apagar as

@@ -12,6 +12,8 @@ export interface Despesa {
   valor: number;
   data: string;
   essencial: boolean;
+  /** Já quitada no mês (não entra em “a pagar” / saldo projetado). */
+  paga: boolean;
 }
 
 export interface Divida {
